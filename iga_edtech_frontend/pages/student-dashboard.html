@@ -7,13 +7,13 @@
   <link rel="stylesheet" href="../css/main.css"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
   <style>
-  
+    /* ── Modals ── */
     .modal-overlay { display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:1000;align-items:center;justify-content:center; }
     .modal-overlay.open { display:flex; }
     .modal-box { background:#fff;border-radius:12px;padding:32px;max-width:600px;width:90%;max-height:85vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.18); }
-  
+    /* ── Avatar hover ── */
     #topbarAvatar:hover { opacity:0.8;transform:scale(1.05);transition:all .15s; }
-   
+    /* ── Course content flow ── */
     .module-card { background:#fff;border:1px solid var(--border);border-radius:8px;padding:20px;margin-bottom:12px;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:space-between; }
     .module-card:hover { border-color:var(--brand);box-shadow:0 2px 8px rgba(37,99,235,0.1); }
     .module-card-left { display:flex;align-items:center;gap:14px; }
@@ -69,7 +69,7 @@
       <button class="nav-item"        data-key="performance" onclick="switchSection('performance',this)" data-i18n="sd.nav.performance">Performance</button>
       <button class="nav-item"        data-key="assessments" onclick="switchSection('assessments',this)" data-i18n="sd.nav.assessments">Assessments</button>
     </nav>
-
+    <!-- Language toggle in sidebar -->
     <div onclick="toggleLang()" style="margin:auto 16px 20px;padding:8px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.2);cursor:pointer;display:flex;align-items:center;gap:8px;color:rgba(255,255,255,0.75);font-size:13px;font-weight:600;">
       <i class="fa-solid fa-globe"></i>
       <span id="sidebarLangLabel">EN / RW</span>
@@ -96,12 +96,14 @@
 
     <div class="page-content">
 
+      <!-- COURSES -->
       <section id="section-courses" class="page-section">
         <div id="coursesLoading" style="color:var(--text-muted);font-size:14px;" data-i18n="sd.courses.loading">Loading…</div>
         <div class="courses-grid" id="coursesGrid"></div>
         <div class="view-all-link" data-i18n="sd.courses.viewall">View all →</div>
       </section>
 
+      <!-- COURSE ENROLL PAGE -->
       <section id="section-enroll" class="page-section hidden">
         <div class="enroll-banner">
           <div class="enroll-banner-title" id="enrollTitle"></div>
@@ -126,6 +128,7 @@
         </div>
       </section>
 
+      <!-- MODULES LIST -->
       <section id="section-modules" class="page-section hidden">
         <div id="modulesContainer"></div>
         <div style="margin-top:16px;">
@@ -133,6 +136,7 @@
         </div>
       </section>
 
+      <!-- LESSONS LIST -->
       <section id="section-lessons" class="page-section hidden">
         <div id="lessonsContainer"></div>
         <div style="margin-top:16px;">
@@ -140,6 +144,7 @@
         </div>
       </section>
 
+      <!-- LESSON VIEWER -->
       <section id="section-lesson" class="page-section hidden">
         <div style="font-size:20px;font-weight:600;color:var(--text-dark);margin-bottom:4px;" id="lessonViewTitle"></div>
         <div style="font-size:13px;color:var(--text-muted);margin-bottom:20px;" id="lessonViewType"></div>
@@ -149,7 +154,7 @@
         </div>
       </section>
 
-
+      <!-- PERFORMANCE -->
       <section id="section-performance" class="page-section hidden">
         <div class="perf-header">
           <div>
@@ -162,7 +167,7 @@
         <div id="gradesBody"></div>
       </section>
 
-  
+      <!-- GRADE REVIEW -->
       <section id="section-grade-review" class="page-section hidden">
         <div style="font-size:20px;font-weight:600;color:var(--text-dark);margin-bottom:4px;" id="reviewTitle"></div>
         <div style="font-size:14px;color:var(--text-mid);margin-bottom:20px;" id="reviewMeta"></div>
@@ -172,7 +177,7 @@
         </div>
       </section>
 
-   
+      <!-- ASSESSMENTS -->
       <section id="section-assessments" class="page-section hidden">
         <div style="font-size:15px;color:var(--text-mid);margin-bottom:20px;" data-i18n="sd.quiz.select">Select a quiz to start:</div>
         <div id="assessmentsLoading" style="color:var(--text-muted);font-size:14px;">Loading…</div>
@@ -180,7 +185,7 @@
         <div class="view-all-link" data-i18n="sd.courses.viewall">View all →</div>
       </section>
 
-
+      <!-- QUIZ DETAIL -->
       <section id="section-quiz-detail" class="page-section hidden">
         <div class="quiz-detail-wrap">
           <div class="quiz-detail-breadcrumb" data-i18n="sd.nav.assessments">Assessments:</div>
@@ -204,7 +209,7 @@
         </div>
       </section>
 
-   
+      <!-- QUIZ SESSION -->
       <section id="section-quiz-session" class="page-section hidden">
         <div style="max-width:760px;">
           <div class="quiz-timer-row">
@@ -222,6 +227,7 @@
         </div>
       </section>
 
+      <!-- QUIZ RESULT -->
       <section id="section-quiz-result" class="page-section hidden">
         <div class="result-screen">
           <div class="score-ring" id="scoreRing">
@@ -242,7 +248,7 @@
   </div>
 </div>
 
-
+<!-- Profile Update Modal (REQ-6) -->
 <div class="modal-overlay" id="profileModal">
   <div class="modal-box" style="max-width:480px;background:#fff;border-radius:12px;padding:32px;width:90%;max-height:85vh;overflow-y:auto;">
     <div style="font-size:18px;font-weight:700;color:#0f172a;margin-bottom:20px;">Edit Profile</div>
@@ -287,7 +293,7 @@
   let timerSecs          = 0, timerInterval = null;
   let lastSubmission     = null;
 
-
+  // ── Init ──────────────────────────────────────────────────────
   (function init() {
     const user = Auth.getUser();
     if (!user) return;
@@ -295,7 +301,7 @@
     document.getElementById('topbarAvatar').textContent = initials;
     document.getElementById('topbarName').textContent   = user.full_name;
     document.getElementById('topbarRole').textContent   = t(`role.${user.role}`) || user.role;
-
+    // Update role label when language switches
     document.addEventListener('iga-lang-changed', () => {
       document.getElementById('topbarRole').textContent = t(`role.${user.role}`) || user.role;
       document.querySelector('.topbar-logout')?.setAttribute('title', t('topbar.logout'));
@@ -317,7 +323,7 @@
     loadAssessmentsUI();
   }
 
-
+  // ── Section switching ─────────────────────────────────────────
   const SECTION_TITLES = {
     'courses':      ['sd.courses.title', 'sd.courses.title'],
     'enroll':       ['sd.courses.title', ''],
@@ -342,7 +348,7 @@
     if (h) document.getElementById('topbarHeading').textContent = t(h);
   }
 
-
+  // ── Profile (REQ-6) ───────────────────────────────────────────
   function openProfileModal() {
     const user = Auth.getUser();
     document.getElementById('profileName').value        = user?.full_name || '';
@@ -377,6 +383,7 @@
     }
   }
 
+  // ── Courses ───────────────────────────────────────────────────
   async function loadCourses() {
     const [coursesRes, enrollRes] = await Promise.all([CourseAPI.list(), CourseAPI.myEnrollments()]);
     document.getElementById('coursesLoading').style.display = 'none';
@@ -438,6 +445,7 @@
     } else { showToast(res.data.message || t('err.enroll.fail'), 'error'); }
   }
 
+  // ── Completions ───────────────────────────────────────────────
   async function loadCompletions() {
     const res = await CourseAPI.myCompletions();
     if (res.ok) completedLessonIds = new Set(res.data.data || []);
@@ -475,6 +483,7 @@
     } else { showToast(t('err.enroll.fail'), 'error'); }
   }
 
+  // ── Modules ───────────────────────────────────────────────────
   function openCourseModules() {
     const modules = selectedCourse?.modules || [];
     document.getElementById('topbarHeading').textContent    = selectedCourse.title;
@@ -515,6 +524,7 @@
     if (selectedCourse) openCourse(selectedCourse.id); else switchSection('courses');
   }
 
+  // ── Lessons ───────────────────────────────────────────────────
   function openModule(moduleIndex) {
     const modules = selectedCourse?.modules || [];
     selectedModule = modules[moduleIndex];
@@ -560,9 +570,10 @@
     const nb = document.querySelector('[data-key="courses"]'); if (nb) nb.classList.add('active');
   }
 
+  // ── Lesson viewer ─────────────────────────────────────────────
   function resolveFileUrl(url) {
     if (!url) return null;
-    if (url.startsWith('/courses/uploads')) return `http://127.0.0.1:5000${url}`;
+    if (url.startsWith('/courses/uploads')) return `https://iga-edtech-backend.onrender.com${url}`;
     return url;
   }
 
@@ -597,6 +608,7 @@
     window._currentLessonId = lesson.id;
   }
 
+  // ── Grades ────────────────────────────────────────────────────
   let _gradeSubs = [];
   async function loadGrades() {
     const res = await GradeAPI.myGrades();
@@ -667,7 +679,7 @@
     switchSection('grade-review');
   }
 
-
+  // ── Assessments ───────────────────────────────────────────────
   let _allAssessments = [];
   async function loadAssessments() {
     const res = await AssessmentAPI.listAll();
@@ -731,7 +743,7 @@
     const nb = document.querySelector('[data-key="assessments"]'); if (nb) nb.classList.add('active');
   }
 
-
+  // ── Quiz session ──────────────────────────────────────────────
   function startQuiz() {
     quizQuestions = selectedAssessment.questions || [];
     if (!quizQuestions.length) { showToast(t('sd.quiz.empty'), 'info'); return; }
