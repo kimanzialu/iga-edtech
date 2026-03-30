@@ -176,4 +176,8 @@ Full **English and Kinyarwanda** switching is supported across all pages. Click 
 ---
 
 ## SRS Document
-[View the full Software Requirements Specification](https://docs.google.com/document/your-srs-link-here)
+https://docs.google.com/document/d/1GRkbGOEaSuGxWcceyBDCPUMX2m1WsFxt57og5NL-7I4/edit?usp=sharing
+
+## Video Link
+https://docs.google.com/document/d/1GRkbGOEaSuGxWcceyBDCPUMX2m1WsFxt57og5NL-7I4/edit?usp=sharing
+
