@@ -91,11 +91,6 @@ def register_student():
     if errors:
         return _json_error("Validation failed.", 422, errors)
 
-    if User.query.filter_by(email=data["email"]).first():
-        return _json_error("An account with this email already exists.", 409)
-    if data.get("phone") and User.query.filter_by(phone=data["phone"]).first():
-        return _json_error("An account with this phone number already exists.", 409)
-
     user = User(
         full_name=data["full_name"],
         email=data["email"],
@@ -127,11 +122,6 @@ def register_teacher():
     data, errors = _load_json(TeacherRegisterSchema)
     if errors:
         return _json_error("Validation failed.", 422, errors)
-
-    if User.query.filter_by(email=data["email"]).first():
-        return _json_error("An account with this email already exists.", 409)
-    if data.get("phone") and User.query.filter_by(phone=data["phone"]).first():
-        return _json_error("An account with this phone number already exists.", 409)
 
     user = User(
         full_name=data["full_name"],
