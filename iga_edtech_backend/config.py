@@ -27,7 +27,7 @@ class Config:
     # Sender must match your verified Brevo account email
     MAIL_DEFAULT_SENDER = os.getenv("MAIL_USERNAME")
     MAIL_SUPPRESS_SEND  = os.getenv("MAIL_SUPPRESS_SEND", "False") == "True"
-
+    RESEND_API_KEY = os.getenv("RESEND_API_KEY")
     OTP_EXPIRES_MINUTES  = int(os.getenv("OTP_EXPIRES_MINUTES",  10))
     MAX_LOGIN_ATTEMPTS   = int(os.getenv("MAX_LOGIN_ATTEMPTS",    5))
     ACCOUNT_LOCK_MINUTES = int(os.getenv("ACCOUNT_LOCK_MINUTES", 30))
