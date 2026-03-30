@@ -95,7 +95,7 @@
         <span id="pendingBadge" class="hidden" style="margin-left:6px;background:#dc2626;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;"></span>
       </button>
     </nav>
-    <!-- Language toggle in sidebar -->
+
     <div onclick="toggleLang()" style="margin:auto 16px 20px;padding:8px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.2);cursor:pointer;display:flex;align-items:center;gap:8px;color:rgba(255,255,255,0.75);font-size:13px;font-weight:600;">
       <i class="fa-solid fa-globe"></i>
       <span id="sidebarLangLabel">EN / RW</span>
@@ -122,7 +122,6 @@
 
     <div class="page-content">
 
-      <!-- ═══ COURSES ═══ -->
       <section id="section-courses" class="page-section">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
           <div style="font-size:20px;font-weight:600;color:var(--text-dark);" data-i18n="td.courses.title">All Courses</div>
@@ -132,7 +131,7 @@
         <div class="courses-grid" id="coursesGrid"></div>
       </section>
 
-      <!-- ═══ CREATE/EDIT COURSE ═══ -->
+
       <section id="section-create-course" class="page-section hidden">
         <div style="font-size:20px;font-weight:600;color:var(--text-dark);margin-bottom:24px;" id="courseFormTitle" data-i18n="td.form.course.title">Create Course</div>
         <input type="hidden" id="editCourseId"/>
@@ -213,7 +212,7 @@
         </div>
       </section>
 
-      <!-- ═══ PERFORMANCE ═══ -->
+
       <section id="section-performance" class="page-section hidden">
         <div class="perf-header">
           <div>
@@ -235,7 +234,7 @@
         <div id="studentsBody"><div style="color:var(--text-muted);font-size:14px;padding:16px 0;" data-i18n="td.perf.loading">Loading…</div></div>
       </section>
 
-      <!-- ═══ ASSESSMENTS ═══ -->
+ 
       <section id="section-assessments" class="page-section hidden">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
           <div style="font-size:20px;font-weight:600;color:var(--text-dark);" data-i18n="td.assess.title">All Assessments</div>
@@ -245,7 +244,7 @@
         <div class="quiz-grid" id="quizGrid"></div>
       </section>
 
-      <!-- ═══ CREATE/EDIT ASSESSMENT ═══ -->
+
       <section id="section-create-assessment" class="page-section hidden">
         <div style="font-size:20px;font-weight:600;color:var(--text-dark);margin-bottom:24px;" id="assessmentFormTitle" data-i18n="td.aform.title">Create Assessment</div>
         <input type="hidden" id="editAssessmentId"/>
@@ -289,7 +288,7 @@
         </div>
       </section>
 
-      <!-- ═══ GRADING — Step 1 ═══ -->
+
       <section id="section-grading" class="page-section hidden">
         <div style="font-size:20px;font-weight:600;color:var(--text-dark);margin-bottom:20px;" data-i18n="td.grade.title">Grade Submissions</div>
         <div id="gradingAssessmentList">
@@ -297,7 +296,7 @@
         </div>
       </section>
 
-      <!-- ═══ GRADING — Step 2 ═══ -->
+   
       <section id="section-grading-submissions" class="page-section hidden">
         <div style="font-size:20px;font-weight:600;color:var(--text-dark);margin-bottom:4px;" id="gradingAssessmentTitle"></div>
         <div style="font-size:13px;color:var(--text-muted);margin-bottom:20px;" id="gradingAssessmentMeta"></div>
@@ -307,7 +306,6 @@
         </div>
       </section>
 
-      <!-- ═══ GRADING — Step 3 ═══ -->
       <section id="section-grading-single" class="page-section hidden">
         <div style="font-size:20px;font-weight:600;color:var(--text-dark);margin-bottom:4px;" id="gradingSingleTitle"></div>
         <div style="font-size:13px;color:var(--text-muted);margin-bottom:20px;" id="gradingSingleMeta"></div>
@@ -322,7 +320,6 @@
   </div>
 </div>
 
-<!-- Edit Lesson Modal -->
 <div class="modal-overlay" id="editLessonModal">
   <div class="modal-box">
     <div class="modal-title" data-i18n="td.modal.edittitle">Edit Lesson</div>
@@ -360,7 +357,7 @@
   </div>
 </div>
 
-<!-- Lesson Preview Modal -->
+
 <div class="modal-overlay" id="lessonPreviewModal">
   <div class="modal-box" style="max-width:780px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
@@ -372,7 +369,7 @@
   </div>
 </div>
 
-<!-- Add Module Modal -->
+
 <div class="modal-overlay" id="addModuleModal">
   <div class="modal-box">
     <div class="modal-title" data-i18n="td.modal.modtitle">Add Module</div>
@@ -391,7 +388,7 @@
   </div>
 </div>
 
-<!-- Add Lesson Modal -->
+
 <div class="modal-overlay" id="addLessonModal">
   <div class="modal-box">
     <div class="modal-title" data-i18n="td.modal.lestitle">Add Lesson</div>
@@ -429,7 +426,7 @@
   </div>
 </div>
 
-<!-- Delete Modal -->
+
 <div class="modal-overlay" id="deleteModal">
   <div class="modal-box">
     <div class="modal-title" id="deleteModalTitle"></div>
@@ -441,7 +438,7 @@
   </div>
 </div>
 
-<!-- Submission Review Modal -->
+
 <div class="modal-overlay" id="submissionReviewModal">
   <div class="modal-box" style="max-width:720px;">
     <div class="modal-title" id="reviewModalTitle"></div>
@@ -453,7 +450,7 @@
   </div>
 </div>
 
-<!-- Profile Update Modal (REQ-6) -->
+
 <div class="modal-overlay" id="profileModal">
   <div class="modal-box" style="max-width:480px;">
     <div class="modal-title">Edit Profile</div>

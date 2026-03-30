@@ -20,7 +20,7 @@
 
     <div class="auth-right">
 
-      <!-- Step 1: Register -->
+    
       <div id="step-register" style="display:flex;flex-direction:column;align-items:center;width:100%;">
         <div class="form-title" data-i18n="treg.title">Sign up as a teacher</div>
         <form id="teacherRegForm" novalidate style="display:flex;flex-direction:column;align-items:center;width:100%;">
@@ -57,7 +57,6 @@
         </div>
       </div>
 
-      <!-- Step 2: OTP -->
       <div id="step-verify" class="hidden" style="display:flex;flex-direction:column;align-items:center;width:100%;">
         <div class="form-title" data-i18n="otp.title">Verify your email</div>
         <div style="text-align:center;margin-bottom:24px;">
@@ -92,7 +91,7 @@
   <script>
     if (typeof Auth !== 'undefined' && Auth.isLoggedIn()) redirectToDashboard(Auth.getRole());
 
-    let registeredEmail = '';
+    let registeredEmail = sessionStorage.getItem('pendingEmail') || '';
 
     function togglePassword(id, btn) {
       const input = document.getElementById(id);
@@ -133,6 +132,7 @@
 
       if (res.ok) {
         registeredEmail = email.value.trim();
+        sessionStorage.setItem('pendingEmail', registeredEmail);
         document.getElementById('verifyEmailDisplay').textContent = registeredEmail;
         document.getElementById('step-register').classList.add('hidden');
         document.getElementById('step-verify').classList.remove('hidden');
