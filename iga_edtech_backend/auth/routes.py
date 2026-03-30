@@ -142,6 +142,7 @@ def register_teacher():
     db.session.add(profile)
 
     otp = create_otp(user, "email_verification")
+    user.is_verified = True
     db.session.commit()
 
     _safe_send_verification(_get_mail(), user, otp)
