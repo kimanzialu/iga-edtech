@@ -52,7 +52,6 @@ def _json_ok(message, data=None, status=200, **extra):
 
 
 def _load_json(schema_cls):
-   
     raw = request.get_json(silent=True) or {}
     schema = schema_cls()
     try:
@@ -65,19 +64,37 @@ def _get_mail():
     from flask_mail import Mail
     return current_app.extensions.get("mail") or Mail(current_app)
 
+
+def _safe_send_verification(mail, user, otp):
+    """Send verification email without crashing the request on failure."""
+    try:
+        send_verification_email(mail, user, otp)
+    except Exception as e:
+        current_app.logger.error(
+            "Failed to send verification email to %s: %s", user.email, e
+        )
+
+
+def _safe_send_reset(mail, user, otp):
+    """Send reset email without crashing the request on failure."""
+    try:
+        send_reset_email(mail, user, otp)
+    except Exception as e:
+        current_app.logger.error(
+            "Failed to send reset email to %s: %s", user.email, e
+        )
+
+
 @auth_bp.route("/register/student", methods=["POST"])
 def register_student():
-    
     data, errors = _load_json(StudentRegisterSchema)
     if errors:
         return _json_error("Validation failed.", 422, errors)
-
 
     if User.query.filter_by(email=data["email"]).first():
         return _json_error("An account with this email already exists.", 409)
     if data.get("phone") and User.query.filter_by(phone=data["phone"]).first():
         return _json_error("An account with this phone number already exists.", 409)
-
 
     user = User(
         full_name=data["full_name"],
@@ -88,16 +105,15 @@ def register_student():
         receive_promotions=data.get("receive_promotions", False),
     )
     db.session.add(user)
-    db.session.flush()   
+    db.session.flush()
 
     profile = StudentProfile(user_id=user.id)
     db.session.add(profile)
 
-   
     otp = create_otp(user, "email_verification")
     db.session.commit()
 
-    send_verification_email(_get_mail(), user, otp)
+    _safe_send_verification(_get_mail(), user, otp)
 
     return _json_ok(
         "Account created! Please check your email for a verification code.",
@@ -108,7 +124,6 @@ def register_student():
 
 @auth_bp.route("/register/teacher", methods=["POST"])
 def register_teacher():
-    
     data, errors = _load_json(TeacherRegisterSchema)
     if errors:
         return _json_error("Validation failed.", 422, errors)
@@ -139,7 +154,7 @@ def register_teacher():
     otp = create_otp(user, "email_verification")
     db.session.commit()
 
-    send_verification_email(_get_mail(), user, otp)
+    _safe_send_verification(_get_mail(), user, otp)
 
     return _json_ok(
         "Teacher account created! Please verify your email.",
@@ -150,7 +165,6 @@ def register_teacher():
 
 @auth_bp.route("/verify-email", methods=["POST"])
 def verify_email():
-   
     data, errors = _load_json(VerifyEmailSchema)
     if errors:
         return _json_error("Validation failed.", 422, errors)
@@ -172,7 +186,6 @@ def verify_email():
     return _json_ok("Email verified successfully. You can now log in.")
 
 
-
 @auth_bp.route("/resend-otp", methods=["POST"])
 def resend_otp():
     data, errors = _load_json(ResendOTPSchema)
@@ -180,7 +193,7 @@ def resend_otp():
         return _json_error("Validation failed.", 422, errors)
 
     user = User.query.filter_by(email=data["email"]).first()
-    
+
     if not user:
         return _json_ok("If that email exists, a new code has been sent.")
 
@@ -188,9 +201,9 @@ def resend_otp():
     db.session.commit()
 
     if data["purpose"] == "email_verification":
-        send_verification_email(_get_mail(), user, otp)
+        _safe_send_verification(_get_mail(), user, otp)
     else:
-        send_reset_email(_get_mail(), user, otp)
+        _safe_send_reset(_get_mail(), user, otp)
 
     return _json_ok("A new verification code has been sent to your email.")
 
@@ -208,12 +221,10 @@ def login():
     if not user:
         return _bad_creds()
 
-  
     if not user.is_active:
         return _json_error(
             "This account has been deactivated. Contact support to reactivate.", 403
         )
-
 
     if user.is_account_locked():
         unlock_time = user.locked_until.strftime("%H:%M UTC") if user.locked_until else "soon"
@@ -231,7 +242,6 @@ def login():
             user.is_locked = True
             user.locked_until = datetime.now(timezone.utc) + timedelta(minutes=lock_minutes)
             db.session.commit()
-       
             return _json_error(
                 f"Too many failed attempts. Your account has been locked for "
                 f"{lock_minutes} minutes. A notification has been sent to your email.",
@@ -243,7 +253,6 @@ def login():
         return _json_error(
             f"Invalid email or password. {remaining} attempt(s) remaining.", 401
         )
-
 
     if not user.is_verified:
         return _json_error(
@@ -272,11 +281,9 @@ def login():
     )
 
 
-
 @auth_bp.route("/refresh", methods=["POST"])
 @jwt_required(refresh=True)
 def refresh():
-    
     user_id = get_jwt_identity()
     user = db.session.get(User, int(user_id))
     if not user or not user.is_active:
@@ -292,7 +299,6 @@ def refresh():
 @auth_bp.route("/logout", methods=["POST"])
 @jwt_required()
 def logout():
- 
     jwt_data = get_jwt()
     revoke_token(jwt_data["jti"], "access")
     return _json_ok("Logged out successfully.")
@@ -308,7 +314,7 @@ def forgot_password():
     if user and user.is_active:
         otp = create_otp(user, "password_reset")
         db.session.commit()
-        send_reset_email(_get_mail(), user, otp)
+        _safe_send_reset(_get_mail(), user, otp)
 
     return _json_ok(
         "If an account exists with that email, a password reset code has been sent."
@@ -317,7 +323,6 @@ def forgot_password():
 
 @auth_bp.route("/reset-password", methods=["POST"])
 def reset_password():
-  
     data, errors = _load_json(ResetPasswordSchema)
     if errors:
         return _json_error("Validation failed.", 422, errors)
@@ -331,7 +336,6 @@ def reset_password():
         return _json_error(msg, 400)
 
     user.password_hash = bcrypt.generate_password_hash(data["new_password"]).decode("utf-8")
-   
     user.is_locked = False
     user.failed_login_attempts = 0
     user.locked_until = None
@@ -343,7 +347,6 @@ def reset_password():
 @auth_bp.route("/me", methods=["GET"])
 @jwt_required()
 def get_me():
-   
     user_id = get_jwt_identity()
     user = db.session.get(User, int(user_id))
     if not user or not user.is_active:
@@ -370,11 +373,9 @@ def update_me():
     if errors:
         return _json_error("Validation failed.", 422, errors)
 
-
     if "full_name" in data:
         user.full_name = data["full_name"]
     if "phone" in data:
-   
         if data["phone"] != user.phone:
             conflict = User.query.filter_by(phone=data["phone"]).first()
             if conflict:

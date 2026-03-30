@@ -1,4 +1,5 @@
 import random
+import socket
 import string
 from datetime import datetime, timedelta, timezone
 
@@ -9,16 +10,12 @@ from models import OTPCode, TokenBlacklist
 from models.base import db
 
 
-
 def generate_otp(length: int = 6) -> str:
-
     return "".join(random.choices(string.digits, k=length))
 
 
 def create_otp(user, purpose: str) -> OTPCode:
-   
     expires_minutes = current_app.config.get("OTP_EXPIRES_MINUTES", 10)
-
 
     OTPCode.query.filter_by(
         user_id=user.id, purpose=purpose, is_used=False
@@ -32,12 +29,11 @@ def create_otp(user, purpose: str) -> OTPCode:
         expires_at=datetime.now(timezone.utc) + timedelta(minutes=expires_minutes),
     )
     db.session.add(otp)
-    db.session.flush()   
+    db.session.flush()
     return otp
 
 
 def verify_otp(user, code: str, purpose: str) -> tuple[bool, str]:
-   
     otp = (
         OTPCode.query
         .filter_by(user_id=user.id, purpose=purpose, is_used=False)
@@ -93,7 +89,6 @@ _RESET_TEMPLATE = """
 
 
 def _render(template: str, **kwargs) -> str:
-    
     result = template
     for key, val in kwargs.items():
         result = result.replace("{{ " + key + " }}", str(val))
@@ -101,7 +96,6 @@ def _render(template: str, **kwargs) -> str:
 
 
 def send_verification_email(mail, user, otp: OTPCode):
-    
     expires = current_app.config.get("OTP_EXPIRES_MINUTES", 10)
     html = _render(_VERIFICATION_TEMPLATE, name=user.full_name, code=otp.code, expires=expires)
     msg = Message(
@@ -109,14 +103,19 @@ def send_verification_email(mail, user, otp: OTPCode):
         recipients=[user.email],
         html=html,
     )
+    # Set a short timeout so a bad SMTP config fails fast instead of hanging Gunicorn
+    old_timeout = socket.getdefaulttimeout()
     try:
+        socket.setdefaulttimeout(10)
         mail.send(msg)
     except Exception as exc:
         current_app.logger.error("Failed to send verification email: %s", exc)
+        raise
+    finally:
+        socket.setdefaulttimeout(old_timeout)
 
 
 def send_reset_email(mail, user, otp: OTPCode):
-  
     expires = current_app.config.get("OTP_EXPIRES_MINUTES", 10)
     html = _render(_RESET_TEMPLATE, name=user.full_name, code=otp.code, expires=expires)
     msg = Message(
@@ -124,14 +123,18 @@ def send_reset_email(mail, user, otp: OTPCode):
         recipients=[user.email],
         html=html,
     )
+    old_timeout = socket.getdefaulttimeout()
     try:
+        socket.setdefaulttimeout(10)
         mail.send(msg)
     except Exception as exc:
         current_app.logger.error("Failed to send reset email: %s", exc)
+        raise
+    finally:
+        socket.setdefaulttimeout(old_timeout)
 
 
 def is_token_revoked(jwt_payload: dict) -> bool:
-    
     jti = jwt_payload.get("jti")
     return db.session.query(
         TokenBlacklist.query.filter_by(jti=jti).exists()
@@ -139,7 +142,6 @@ def is_token_revoked(jwt_payload: dict) -> bool:
 
 
 def revoke_token(jti: str, token_type: str = "access"):
-
     entry = TokenBlacklist(jti=jti, token_type=token_type)
     db.session.add(entry)
     db.session.commit()
