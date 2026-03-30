@@ -36,6 +36,7 @@ auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
 bcrypt = Bcrypt()
 
+
 def _json_error(message, status=400, errors=None):
     body = {"success": False, "message": message}
     if errors:
@@ -66,7 +67,6 @@ def _get_mail():
 
 
 def _safe_send_verification(mail, user, otp):
-    """Send verification email without crashing the request on failure."""
     try:
         send_verification_email(mail, user, otp)
     except Exception as e:
@@ -76,7 +76,6 @@ def _safe_send_verification(mail, user, otp):
 
 
 def _safe_send_reset(mail, user, otp):
-    """Send reset email without crashing the request on failure."""
     try:
         send_reset_email(mail, user, otp)
     except Exception as e:
@@ -105,13 +104,11 @@ def register_student():
     profile = StudentProfile(user_id=user.id)
     db.session.add(profile)
 
-    otp = create_otp(user, "email_verification")
+    user.is_verified = True
     db.session.commit()
 
-    _safe_send_verification(_get_mail(), user, otp)
-
     return _json_ok(
-        "Account created! Please check your email for a verification code.",
+        "Account created! You can now log in.",
         data={"user_id": user.id, "email": user.email},
         status=201,
     )
@@ -141,14 +138,11 @@ def register_teacher():
     )
     db.session.add(profile)
 
-    otp = create_otp(user, "email_verification")
     user.is_verified = True
     db.session.commit()
 
-    _safe_send_verification(_get_mail(), user, otp)
-
     return _json_ok(
-        "Teacher account created! Please verify your email.",
+        "Teacher account created! You can now log in.",
         data={"user_id": user.id, "email": user.email},
         status=201,
     )
@@ -235,7 +229,7 @@ def login():
             db.session.commit()
             return _json_error(
                 f"Too many failed attempts. Your account has been locked for "
-                f"{lock_minutes} minutes. A notification has been sent to your email.",
+                f"{lock_minutes} minutes.",
                 423,
             )
 
@@ -247,9 +241,7 @@ def login():
 
     if not user.is_verified:
         return _json_error(
-            "Please verify your email address before logging in. "
-            "Check your inbox or request a new code.",
-            403,
+            "Please verify your email address before logging in.", 403
         )
 
     user.failed_login_attempts = 0
