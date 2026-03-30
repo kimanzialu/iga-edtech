@@ -1,10 +1,9 @@
 import random
-import socket
 import string
 from datetime import datetime, timedelta, timezone
 
-from flask import current_app, render_template_string
-from flask_mail import Message
+import resend
+from flask import current_app
 
 from models import OTPCode, TokenBlacklist
 from models.base import db
@@ -96,42 +95,39 @@ def _render(template: str, **kwargs) -> str:
 
 
 def send_verification_email(mail, user, otp: OTPCode):
+    """Send OTP verification email via Resend."""
     expires = current_app.config.get("OTP_EXPIRES_MINUTES", 10)
-    html = _render(_VERIFICATION_TEMPLATE, name=user.full_name, code=otp.code, expires=expires)
-    msg = Message(
-        subject="Iga EdTech — Verify your email address",
-        recipients=[user.email],
-        html=html,
-    )
-    # Set a short timeout so a bad SMTP config fails fast instead of hanging Gunicorn
-    old_timeout = socket.getdefaulttimeout()
+    html    = _render(_VERIFICATION_TEMPLATE, name=user.full_name, code=otp.code, expires=expires)
+
+    resend.api_key = current_app.config.get("RESEND_API_KEY")
     try:
-        socket.setdefaulttimeout(10)
-        mail.send(msg)
+        resend.Emails.send({
+            "from":    "Iga EdTech <onboarding@resend.dev>",
+            "to":      [user.email],
+            "subject": "Iga EdTech — Verify your email address",
+            "html":    html,
+        })
     except Exception as exc:
         current_app.logger.error("Failed to send verification email: %s", exc)
         raise
-    finally:
-        socket.setdefaulttimeout(old_timeout)
 
 
 def send_reset_email(mail, user, otp: OTPCode):
+    """Send password reset OTP email via Resend."""
     expires = current_app.config.get("OTP_EXPIRES_MINUTES", 10)
-    html = _render(_RESET_TEMPLATE, name=user.full_name, code=otp.code, expires=expires)
-    msg = Message(
-        subject="Iga EdTech — Reset your password",
-        recipients=[user.email],
-        html=html,
-    )
-    old_timeout = socket.getdefaulttimeout()
+    html    = _render(_RESET_TEMPLATE, name=user.full_name, code=otp.code, expires=expires)
+
+    resend.api_key = current_app.config.get("RESEND_API_KEY")
     try:
-        socket.setdefaulttimeout(10)
-        mail.send(msg)
+        resend.Emails.send({
+            "from":    "Iga EdTech <onboarding@resend.dev>",
+            "to":      [user.email],
+            "subject": "Iga EdTech — Reset your password",
+            "html":    html,
+        })
     except Exception as exc:
         current_app.logger.error("Failed to send reset email: %s", exc)
         raise
-    finally:
-        socket.setdefaulttimeout(old_timeout)
 
 
 def is_token_revoked(jwt_payload: dict) -> bool:

@@ -10,3 +10,4 @@ reportlab
 flask-cors
 Werkzeug
 gunicorn
+resend
