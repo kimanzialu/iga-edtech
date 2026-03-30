@@ -1,8 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap');
 
-/* ══════════════════════════════════════════════════
-   DESIGN TOKENS — aligned with shared-auth.css
-   ══════════════════════════════════════════════════ */
+
 :root {
   --brand:              #2563EB;
   --brand-dark:         #1d4ed8;
@@ -24,7 +22,7 @@
   --radius:             4px;
 }
 
-/* ── Reset ────────────────────────────────────────── */
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { font-size: 16px; }
 body { font-family: var(--font-main); background: var(--page-bg); color: var(--text-dark); -webkit-font-smoothing: antialiased; }
@@ -33,10 +31,9 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 input, textarea, select { font-family: inherit; outline: none; }
 ul { list-style: none; }
 
-/* ── Utility ──────────────────────────────────────── */
 .hidden { display: none !important; }
 
-/* ── Toast ────────────────────────────────────────── */
+
 #toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
 .toast { display: flex; align-items: center; gap: 10px; padding: 12px 18px; border-radius: 6px; color: #fff; font-size: 14px; font-family: var(--font-main); min-width: 260px; animation: slideUp .2s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
 .toast.success { background: #16a34a; }
@@ -44,20 +41,18 @@ ul { list-style: none; }
 .toast.info    { background: var(--brand); }
 @keyframes slideUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
 
-/* ── Spinner ──────────────────────────────────────── */
+
 .spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ══════════════════════════════════════════════════
-   DASHBOARD LAYOUT
-   ══════════════════════════════════════════════════ */
+
 .dashboard-page {
   display: flex;
   min-height: 100vh;
   background: var(--page-bg);
 }
 
-/* ── Sidebar ──────────────────────────────────────── */
+
 .sidebar {
   width: 260px;
   min-height: 100vh;
@@ -125,7 +120,7 @@ ul { list-style: none; }
 }
 .sidebar-logout:hover { color: #fff; background: rgba(255,255,255,0.1); }
 
-/* ── Main area ────────────────────────────────────── */
+
 .main-wrap { flex: 1; display: flex; flex-direction: column; min-width: 0; }
 
 .main-topbar {
@@ -179,16 +174,13 @@ ul { list-style: none; }
 .page-section { animation: fadeIn .2s ease; }
 @keyframes fadeIn { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:translateY(0); } }
 
-/* ── View all link ────────────────────────────────── */
+
 .view-all-link {
   font-size: 14px; color: var(--brand); cursor: pointer;
   margin-top: 20px; display: inline-flex; align-items: center; gap: 4px;
 }
 .view-all-link:hover { text-decoration: underline; }
 
-/* ══════════════════════════════════════════════════
-   COURSE CARDS
-   ══════════════════════════════════════════════════ */
 .courses-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -231,9 +223,7 @@ ul { list-style: none; }
 .course-name { font-size: 16px; font-weight: 600; color: var(--text-dark); margin-bottom: 6px; }
 .course-modules { font-size: 13px; color: var(--text-mid); }
 
-/* ══════════════════════════════════════════════════
-   QUIZ CARDS
-   ══════════════════════════════════════════════════ */
+
 .quiz-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -263,9 +253,7 @@ ul { list-style: none; }
 .quiz-name { font-size: 15px; font-weight: 600; color: var(--text-dark); margin: 4px 0; }
 .quiz-questions { font-size: 13px; color: var(--text-mid); }
 
-/* ══════════════════════════════════════════════════
-   PERFORMANCE TABLE
-   ══════════════════════════════════════════════════ */
+
 .perf-header {
   display: flex; align-items: baseline;
   justify-content: space-between; margin-bottom: 16px;
@@ -285,9 +273,6 @@ ul { list-style: none; }
 .perf-graded   { color: #16a34a; font-weight: 600; }
 .perf-ungraded { color: var(--text-muted); }
 
-/* ══════════════════════════════════════════════════
-   ENROLL PAGE
-   ══════════════════════════════════════════════════ */
 .enroll-banner {
   background: #fff;
   border: 1.5px solid var(--brand);
@@ -349,9 +334,7 @@ ul { list-style: none; }
 .enroll-info h3 { font-size: 18px; font-weight: 600; color: var(--text-dark); margin-bottom: 12px; }
 .enroll-info p  { font-size: 15px; color: var(--text-mid); line-height: 1.7; }
 
-/* ══════════════════════════════════════════════════
-   QUIZ DETAIL
-   ══════════════════════════════════════════════════ */
+
 .quiz-detail-wrap { padding: 0; max-width: 760px; }
 .quiz-detail-breadcrumb { font-size: 13px; color: var(--text-muted); margin-bottom: 6px; }
 .quiz-detail-title { font-size: 22px; font-weight: 700; color: var(--text-dark); margin-bottom: 6px; }
@@ -373,9 +356,6 @@ ul { list-style: none; }
 }
 .btn-start-now:hover { background: var(--brand-dark); }
 
-/* ══════════════════════════════════════════════════
-   QUIZ SESSION
-   ══════════════════════════════════════════════════ */
 .quiz-timer-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
 .timer-pill {
   background: #fef3c7; color: #d97706;
@@ -428,9 +408,7 @@ ul { list-style: none; }
 }
 .btn-q-submit:hover { background: var(--brand-dark); }
 
-/* ══════════════════════════════════════════════════
-   QUIZ RESULT
-   ══════════════════════════════════════════════════ */
+
 .result-screen {
   display: flex;
   flex-direction: column;
@@ -457,9 +435,6 @@ ul { list-style: none; }
 .score-ring.fail .score-lbl { color: #dc2626; }
 .result-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 24px; }
 
-/* ══════════════════════════════════════════════════
-   CREATE COURSE (teacher dashboard)
-   ══════════════════════════════════════════════════ */
 .create-course-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; max-width: 860px; }
 .create-section-title { font-size: 16px; font-weight: 600; color: var(--text-dark); margin-bottom: 16px; }
 .create-label { font-size: 13px; color: var(--text-mid); margin-bottom: 6px; }

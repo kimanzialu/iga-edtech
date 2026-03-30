@@ -1,7 +1,3 @@
-/**
- * Shared dashboard layout helpers
- * Used by student-dashboard.html and teacher-dashboard.html
- */
 
 function buildSidebar(navItems, activeKey) {
   const user = Auth.getUser();

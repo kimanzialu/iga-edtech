@@ -1,10 +1,4 @@
-/**
- * Iga EdTech — Shared Components
- * Navbar and footer inject into every page.
- * Globe button toggles EN ↔ RW via i18n.js.
- */
 
-// ── Path detection ────────────────────────────────────────────────────────────
 const _path     = window.location.pathname;
 const isSubPage = _path.includes('/pages/');
 const isIndex   = _path === '/' || _path.endsWith('index.html');
@@ -12,7 +6,7 @@ const rootPath  = isSubPage ? '../' : './';
 const pagesPath = isSubPage ? './'  : './pages/';
 const isTeacher = _path.includes('teacher');
 
-// ── Theme colors ──────────────────────────────────────────────────────────────
+
 const BRAND       = isTeacher ? '#10B981' : '#2563EB';
 const BRAND_DARK  = isTeacher ? '#3d6b4d' : '#1d4ed8';
 const BRAND_LIGHT = isTeacher ? 'rgba(82,134,97,0.08)' : 'rgba(37,99,235,0.05)';
@@ -39,7 +33,7 @@ function injectTheme() {
   document.head.appendChild(style);
 }
 
-// ── Navbar ────────────────────────────────────────────────────────────────────
+
 function getNavbar() {
   const onTeacherLogin    = _path.includes('teacher-login');
   const onTeacherRegister = _path.includes('teacher-register');
@@ -81,7 +75,6 @@ function getNavbar() {
     </nav>`;
 }
 
-// ── Footer ────────────────────────────────────────────────────────────────────
 function getFooter() {
   return `
     <footer class="site-footer">
@@ -122,7 +115,7 @@ function getFooter() {
     </footer>`;
 }
 
-// ── Font Awesome ──────────────────────────────────────────────────────────────
+
 function injectFontAwesome() {
   if (!document.getElementById('fa-cdn')) {
     const link = document.createElement('link');
@@ -132,7 +125,6 @@ function injectFontAwesome() {
   }
 }
 
-// ── Update language label in navbar + footer ──────────────────────────────────
 function _updateLangLabel() {
   const lang  = (typeof getLang === 'function') ? getLang() : (localStorage.getItem('iga_lang') || 'en');
   const label = lang === 'en' ? 'EN' : 'RW';
@@ -142,7 +134,7 @@ function _updateLangLabel() {
   if (foot) foot.textContent = label;
 }
 
-// ── Inject everything ─────────────────────────────────────────────────────────
+
 function injectComponents() {
   injectFontAwesome();
   injectTheme();
@@ -151,7 +143,6 @@ function injectComponents() {
   if (navEl)    navEl.innerHTML    = getNavbar();
   if (footerEl) footerEl.innerHTML = getFooter();
 
-  // Hover effect for lang toggle (can't use :hover on inline style)
   const langBtn = document.getElementById('langToggleBtn');
   if (langBtn) {
     langBtn.addEventListener('mouseenter', () => {
@@ -164,12 +155,12 @@ function injectComponents() {
     });
   }
 
-  // Apply translations if i18n.js is loaded
+ 
   if (typeof applyLang === 'function') applyLang();
   _updateLangLabel();
 }
 
-// ── Redirect helper ───────────────────────────────────────────────────────────
+
 function redirectToDashboard(role) {
   const dashMap = {
     student: `${rootPath}pages/student-dashboard.html`,
@@ -179,10 +170,10 @@ function redirectToDashboard(role) {
   window.location.href = dashMap[role] || `${rootPath}pages/student-dashboard.html`;
 }
 
-// Patch setLang to also update the label whenever language changes
+
 const _origSetLang = typeof setLang !== 'undefined' ? setLang : null;
 function _patchedLangUpdate() { _updateLangLabel(); }
-// Hook in after i18n.js runs (i18n.js defines setLang, components.js calls injectComponents)
+
 document.addEventListener('iga-lang-changed', _patchedLangUpdate);
 
 if (document.readyState === 'loading') {
