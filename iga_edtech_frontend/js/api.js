@@ -1,5 +1,5 @@
 
-const API_BASE = 'http://127.0.0.1:5000';
+const API_BASE = 'https://iga-edtech-backend.onrender.com/auth';
 
 const Auth = {
   getToken()       { return localStorage.getItem('iga_access_token'); },

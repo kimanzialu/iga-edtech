@@ -1,4 +1,3 @@
-
 from flask import Flask, jsonify
 from flask_jwt_extended import JWTManager
 from flask_mail import Mail
@@ -15,7 +14,6 @@ jwt = JWTManager()
 def create_app(config_class=None):
     app = Flask(__name__)
 
-   
     cfg = config_class or get_config()
     app.config.from_object(cfg)
 
@@ -26,18 +24,16 @@ def create_app(config_class=None):
         "http://127.0.0.1:5500",
         "http://localhost:3000",
         "http://127.0.0.1:3000",
-        "null",  
+        "null",
+        "https://iga-edtech.vercel.app",
     ], supports_credentials=True)
 
-   
     db.init_app(app)
     mail.init_app(app)
     jwt.init_app(app)
 
-  
     from auth import bcrypt
     bcrypt.init_app(app)
-
 
     @jwt.token_in_blocklist_loader
     def check_if_token_revoked(jwt_header, jwt_payload):
@@ -62,14 +58,12 @@ def create_app(config_class=None):
     def missing_token_response(msg):
         return jsonify({"success": False, "message": "Authentication required."}), 401
 
-
     from auth.routes import auth_bp
     app.register_blueprint(auth_bp)
 
     from courses.routes import courses_bp
     app.register_blueprint(courses_bp)
 
-   
     with app.app_context():
         db.create_all()
 
