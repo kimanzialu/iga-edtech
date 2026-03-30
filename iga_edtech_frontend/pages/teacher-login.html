@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Teacher Login — Iga EdTech</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="../css/shared-auth.css"/>
+</head>
+<body>
+  <div id="navbar-placeholder"></div>
+
+  <div class="auth-body">
+    <div class="auth-left">
+      <div class="illustration-box">
+        <img src="../assets/Teacher-register.svg" alt="Teacher login"
+             style="width:100%;height:100%;object-fit:contain;padding:20px;"/>
+      </div>
+    </div>
+
+    <div class="auth-right">
+      <div class="form-title" data-i18n="tlogin.title">Login as a teacher</div>
+      <form id="teacherLoginForm" novalidate style="display:flex;flex-direction:column;align-items:center;width:100%;">
+
+        <input class="input-field" type="email" id="email" required
+               data-i18n-placeholder="login.email" placeholder="Email"/>
+        <div id="emailError" class="field-error hidden"></div>
+
+        <div style="position:relative;width:100%;max-width:460px;">
+          <input class="input-field" type="password" id="password" required
+                 data-i18n-placeholder="login.password" placeholder="Password"
+                 style="margin-bottom:0;padding-right:52px;width:100%;"/>
+          <button type="button" onclick="togglePassword('password',this)"
+                  style="position:absolute;right:16px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#94a3b8;font-size:16px;padding:0;">
+            <i class="fa-regular fa-eye"></i>
+          </button>
+        </div>
+        <div id="passError" class="field-error hidden"></div>
+
+        <button type="submit" class="btn-submit" id="loginBtn" style="margin-top:16px;"
+                data-i18n="tlogin.btn">Login with email</button>
+      </form>
+
+      <div class="switch-box">
+        <span data-i18n="tlogin.noaccount">Don't have an account?</span>
+        <a href="teacher-register.html" data-i18n="tlogin.register"> Register</a>
+      </div>
+      <div style="margin-top:8px;text-align:center;">
+        <a href="login.html" data-i18n="tlogin.student"
+           style="font-size:13px;color:#94a3b8;">← Student login</a>
+      </div>
+    </div>
+  </div>
+
+  <div id="footer-placeholder"></div>
+
+  <script src="../js/i18n.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/components.js"></script>
+  <script>
+    if (typeof Auth !== 'undefined' && Auth.isLoggedIn() && Auth.getRole() === 'teacher') {
+      window.location.href = 'teacher-dashboard.html';
+    }
+
+    function togglePassword(id, btn) {
+      const input = document.getElementById(id);
+      const isHidden = input.type === 'password';
+      input.type = isHidden ? 'text' : 'password';
+      btn.innerHTML = isHidden
+        ? '<i class="fa-regular fa-eye-slash"></i>'
+        : '<i class="fa-regular fa-eye"></i>';
+    }
+
+    document.getElementById('teacherLoginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn      = document.getElementById('loginBtn');
+      const emailEl  = document.getElementById('email');
+      const passEl   = document.getElementById('password');
+      const emailErr = document.getElementById('emailError');
+      const passErr  = document.getElementById('passError');
+
+      [emailErr, passErr].forEach(el => { el.textContent=''; el.classList.add('hidden'); });
+      [emailEl, passEl].forEach(el => el.classList.remove('error'));
+
+      let valid = true;
+      if (!emailEl.value.trim()) { emailErr.textContent=t('err.required.email'); emailErr.classList.remove('hidden'); emailEl.classList.add('error'); valid=false; }
+      if (!passEl.value)         { passErr.textContent=t('err.required.pass');  passErr.classList.remove('hidden');  passEl.classList.add('error');  valid=false; }
+      if (!valid) return;
+
+      setLoading(btn, true);
+      const res = await AuthAPI.login({ email: emailEl.value.trim(), password: passEl.value });
+      setLoading(btn, false);
+
+      if (res.ok) {
+        const user = res.data.data.user;
+        if (user.role !== 'teacher' && user.role !== 'admin') {
+          showToast(t('err.notteacher'), 'error'); return;
+        }
+        Auth.setSession(res.data.data);
+        showToast(t('toast.welcome'), 'success');
+        setTimeout(() => window.location.href = 'teacher-dashboard.html', 700);
+      } else {
+        const msg = res.data.message || t('err.login.failed');
+        showToast(msg, 'error');
+        passErr.textContent = msg;
+        passErr.classList.remove('hidden');
+        passEl.classList.add('error');
+      }
+    });
+  </script>
+</body>
+</html>

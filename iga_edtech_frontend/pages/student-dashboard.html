@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard — Iga EdTech</title>
+  <link rel="stylesheet" href="../css/main.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    /* ── Modals ── */
+    .modal-overlay { display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:1000;align-items:center;justify-content:center; }
+    .modal-overlay.open { display:flex; }
+    .modal-box { background:#fff;border-radius:12px;padding:32px;max-width:600px;width:90%;max-height:85vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.18); }
+    /* ── Avatar hover ── */
+    #topbarAvatar:hover { opacity:0.8;transform:scale(1.05);transition:all .15s; }
+    /* ── Course content flow ── */
+    .module-card { background:#fff;border:1px solid var(--border);border-radius:8px;padding:20px;margin-bottom:12px;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:space-between; }
+    .module-card:hover { border-color:var(--brand);box-shadow:0 2px 8px rgba(37,99,235,0.1); }
+    .module-card-left { display:flex;align-items:center;gap:14px; }
+    .module-icon { width:44px;height:44px;border-radius:10px;background:var(--brand-light);display:flex;align-items:center;justify-content:center;color:var(--brand);font-size:18px;flex-shrink:0; }
+    .module-card-title { font-size:15px;font-weight:600;color:var(--text-dark); }
+    .module-card-desc  { font-size:13px;color:var(--text-muted);margin-top:2px; }
+    .module-card-count { font-size:12px;color:var(--text-muted);margin-top:4px; }
+    .lesson-item { display:flex;align-items:center;gap:14px;padding:14px 18px;border:1px solid var(--border);border-radius:8px;margin-bottom:10px;cursor:pointer;transition:all .15s;background:#fff; }
+    .lesson-item:hover { border-color:var(--brand);box-shadow:0 2px 8px rgba(37,99,235,0.1); }
+    .lesson-item.done { border-color:#16a34a;background:#f0fdf4; }
+    .lesson-item.done .lesson-icon-wrap { background:#dcfce7;color:#16a34a; }
+    .lesson-icon-wrap { width:40px;height:40px;border-radius:8px;background:var(--brand-light);display:flex;align-items:center;justify-content:center;color:var(--brand);font-size:16px;flex-shrink:0; }
+    .lesson-meta { flex:1; }
+    .lesson-title-text { font-size:14px;font-weight:600;color:var(--text-dark); }
+    .lesson-type-text  { font-size:12px;color:var(--text-muted);margin-top:2px; }
+    .lesson-done-badge { font-size:11px;font-weight:600;color:#16a34a;display:flex;align-items:center;gap:4px;white-space:nowrap; }
+    .btn-mark-done { font-size:12px;font-weight:600;padding:5px 12px;border-radius:var(--radius);cursor:pointer;font-family:var(--font-main);transition:all .15s;white-space:nowrap;display:inline-flex;align-items:center;gap:5px; }
+    .btn-mark-done.not-done { border:1.5px solid var(--border);background:#fff;color:var(--text-mid); }
+    .btn-mark-done.not-done:hover { border-color:#16a34a;color:#16a34a;background:#f0fdf4; }
+    .btn-mark-done.is-done { border:1.5px solid #16a34a;background:#dcfce7;color:#16a34a; }
+    .module-progress-wrap { height:4px;background:var(--border);border-radius:2px;margin-top:6px; }
+    .module-progress-bar  { height:100%;background:#16a34a;border-radius:2px;transition:width .3s; }
+    .review-item { padding:16px;border:1px solid var(--border);border-radius:8px;margin-bottom:12px; }
+    .review-item.correct   { border-color:#16a34a;background:#f0fdf4; }
+    .review-item.incorrect { border-color:#dc2626;background:#fef2f2; }
+    .review-item.pending   { border-color:#d97706;background:#fffbeb; }
+    .review-q      { font-size:15px;font-weight:600;color:var(--text-dark);margin-bottom:8px; }
+    .review-answer { font-size:13px;margin-bottom:4px; }
+    .review-correct-lbl   { color:#16a34a;font-weight:600; }
+    .review-incorrect-lbl { color:#dc2626;font-weight:600; }
+    .review-pending-lbl   { color:#d97706;font-weight:600; }
+    .review-comment { font-size:13px;color:#7c3aed;font-style:italic;margin-top:6px; }
+    .perf-row { display:grid;grid-template-columns:2fr 1fr 1fr 1fr;font-size:14px;color:var(--text-mid);padding:12px 0;border-bottom:1px solid var(--border);align-items:center;cursor:pointer; }
+    .perf-row:hover { background:#f8fafc; }
+    .perf-row:last-child { border-bottom:none; }
+    .badge-pending-sm { background:#fef3c7;color:#d97706;font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600; }
+    .q-option { display:flex;align-items:center;gap:14px;padding:14px 18px;border:1.5px solid var(--border);border-radius:var(--radius);cursor:pointer;transition:all .15s;background:#fff;margin-bottom:10px; }
+    .q-option:hover { border-color:var(--brand);background:var(--brand-light); }
+    .q-option.selected { border-color:var(--brand);background:#dbeafe; }
+    .q-option.multi-selected { border-color:#10B981;background:#d1fae5; }
+    .q-bubble { width:30px;height:30px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0;color:var(--text-mid); }
+    .q-option.selected .q-bubble { background:var(--brand);border-color:var(--brand);color:#fff; }
+    .q-option.multi-selected .q-bubble { background:#10B981;border-color:#10B981;color:#fff; }
+    .q-option-text { font-size:15px;color:var(--text-mid); }
+  </style>
+</head>
+<body>
+<div class="dashboard-page">
+  <aside class="sidebar">
+    <div class="sidebar-logo">Iga <span>Ed</span>Tech</div>
+    <nav class="sidebar-nav">
+      <button class="nav-item active" data-key="courses"     onclick="switchSection('courses',this)"     data-i18n="sd.nav.courses">Courses</button>
+      <button class="nav-item"        data-key="performance" onclick="switchSection('performance',this)" data-i18n="sd.nav.performance">Performance</button>
+      <button class="nav-item"        data-key="assessments" onclick="switchSection('assessments',this)" data-i18n="sd.nav.assessments">Assessments</button>
+    </nav>
+    <!-- Language toggle in sidebar -->
+    <div onclick="toggleLang()" style="margin:auto 16px 20px;padding:8px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.2);cursor:pointer;display:flex;align-items:center;gap:8px;color:rgba(255,255,255,0.75);font-size:13px;font-weight:600;">
+      <i class="fa-solid fa-globe"></i>
+      <span id="sidebarLangLabel">EN / RW</span>
+    </div>
+  </aside>
+
+  <div class="main-wrap">
+    <div class="main-topbar">
+      <div>
+        <div class="topbar-breadcrumb" id="topbarBreadcrumb" data-i18n="sd.courses.title">My Courses:</div>
+        <div class="topbar-heading"    id="topbarHeading"    data-i18n="sd.courses.title">All Courses</div>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-user-info">
+          <div class="topbar-user-name" id="topbarName">—</div>
+          <div class="topbar-user-role" id="topbarRole">Student</div>
+        </div>
+        <div class="topbar-avatar" id="topbarAvatar" onclick="openProfileModal()" title="Edit profile" style="cursor:pointer;">—</div>
+        <button class="topbar-logout" onclick="handleLogout()" title="Logout">
+          <i class="fa-solid fa-right-from-bracket"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="page-content">
+
+      <!-- COURSES -->
+      <section id="section-courses" class="page-section">
+        <div id="coursesLoading" style="color:var(--text-muted);font-size:14px;" data-i18n="sd.courses.loading">Loading…</div>
+        <div class="courses-grid" id="coursesGrid"></div>
+        <div class="view-all-link" data-i18n="sd.courses.viewall">View all →</div>
+      </section>
+
+      <!-- COURSE ENROLL PAGE -->
+      <section id="section-enroll" class="page-section hidden">
+        <div class="enroll-banner">
+          <div class="enroll-banner-title" id="enrollTitle"></div>
+          <button class="btn-enroll" id="enrollBtn" onclick="doEnroll()" data-i18n="sd.enroll.btn">Enroll in Course</button>
+        </div>
+        <div class="enroll-card">
+          <div class="enroll-illo" id="enrollIllo"></div>
+          <div class="enroll-info">
+            <h3 id="enrollCourseName"></h3>
+            <p  id="enrollCourseDesc"></p>
+            <p  id="enrollGuidelines" style="margin-top:12px;font-size:13px;color:var(--text-muted);"></p>
+            <div id="continueSection" class="hidden" style="margin-top:20px;">
+              <button class="btn-enroll" onclick="openCourseModules()" style="width:auto;padding:0 28px;">
+                <i class="fa-solid fa-play" style="margin-right:8px;"></i>
+                <span data-i18n="sd.enroll.continue">Continue to Course</span>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:16px;">
+          <a onclick="switchSection('courses')" style="font-size:14px;color:#888;cursor:pointer;" data-i18n="sd.enroll.back">← Back to Courses</a>
+        </div>
+      </section>
+
+      <!-- MODULES LIST -->
+      <section id="section-modules" class="page-section hidden">
+        <div id="modulesContainer"></div>
+        <div style="margin-top:16px;">
+          <a onclick="backToCourse()" style="font-size:14px;color:#888;cursor:pointer;" data-i18n="sd.modules.back">← Back to Course</a>
+        </div>
+      </section>
+
+      <!-- LESSONS LIST -->
+      <section id="section-lessons" class="page-section hidden">
+        <div id="lessonsContainer"></div>
+        <div style="margin-top:16px;">
+          <a onclick="switchSection('modules')" style="font-size:14px;color:#888;cursor:pointer;" data-i18n="sd.lessons.back">← Back to Modules</a>
+        </div>
+      </section>
+
+      <!-- LESSON VIEWER -->
+      <section id="section-lesson" class="page-section hidden">
+        <div style="font-size:20px;font-weight:600;color:var(--text-dark);margin-bottom:4px;" id="lessonViewTitle"></div>
+        <div style="font-size:13px;color:var(--text-muted);margin-bottom:20px;" id="lessonViewType"></div>
+        <div id="lessonViewContent" style="max-width:800px;"></div>
+        <div style="margin-top:20px;">
+          <a onclick="switchSection('lessons')" style="font-size:14px;color:#888;cursor:pointer;" data-i18n="sd.lessons.back2">← Back to Lessons</a>
+        </div>
+      </section>
+
+      <!-- PERFORMANCE -->
+      <section id="section-performance" class="page-section hidden">
+        <div class="perf-header">
+          <div>
+            <div class="perf-title" data-i18n="sd.perf.title">All Grades</div>
+            <div class="perf-subtitle" data-i18n="sd.perf.sub">Your assessment results:</div>
+          </div>
+          <div class="overall-grade" id="overallGrade" data-i18n="sd.perf.overall">Overall Grade: —</div>
+        </div>
+        <div id="gradesLoading" style="color:var(--text-muted);font-size:14px;" data-i18n="sd.perf.loading">Loading grades…</div>
+        <div id="gradesBody"></div>
+      </section>
+
+      <!-- GRADE REVIEW -->
+      <section id="section-grade-review" class="page-section hidden">
+        <div style="font-size:20px;font-weight:600;color:var(--text-dark);margin-bottom:4px;" id="reviewTitle"></div>
+        <div style="font-size:14px;color:var(--text-mid);margin-bottom:20px;" id="reviewMeta"></div>
+        <div id="reviewBody"></div>
+        <div style="margin-top:20px;">
+          <a onclick="switchSection('performance')" style="font-size:14px;color:#888;cursor:pointer;" data-i18n="sd.review.back">← Back to Grades</a>
+        </div>
+      </section>
+
+      <!-- ASSESSMENTS -->
+      <section id="section-assessments" class="page-section hidden">
+        <div style="font-size:15px;color:var(--text-mid);margin-bottom:20px;" data-i18n="sd.quiz.select">Select a quiz to start:</div>
+        <div id="assessmentsLoading" style="color:var(--text-muted);font-size:14px;">Loading…</div>
+        <div class="quiz-grid" id="quizGrid"></div>
+        <div class="view-all-link" data-i18n="sd.courses.viewall">View all →</div>
+      </section>
+
+      <!-- QUIZ DETAIL -->
+      <section id="section-quiz-detail" class="page-section hidden">
+        <div class="quiz-detail-wrap">
+          <div class="quiz-detail-breadcrumb" data-i18n="sd.nav.assessments">Assessments:</div>
+          <div class="quiz-detail-title" id="quizDetailTitle"></div>
+          <div class="quiz-detail-meta"  id="quizDetailMeta"></div>
+          <div class="quiz-detail-body">
+            <strong data-i18n="sd.quizd.desc">Description:</strong>
+            <p id="quizDetailDesc"></p>
+            <strong data-i18n="sd.quizd.inst">Instructions:</strong>
+            <ul>
+              <li data-i18n="sd.quizd.inst1">Read each question carefully before answering.</li>
+              <li data-i18n="sd.quizd.inst2">For multiple-choice questions, select all correct answers.</li>
+              <li data-i18n="sd.quizd.inst3">You must answer all questions before submitting.</li>
+            </ul>
+          </div>
+          <div id="attemptWarning" class="hidden" style="margin-top:16px;padding:12px 16px;background:#fef3c7;border-radius:8px;font-size:14px;color:#d97706;"></div>
+          <button class="btn-start-now" id="startQuizBtn" onclick="startQuiz()" data-i18n="sd.quizd.start">Start Now</button>
+        </div>
+        <div style="margin-top:16px;">
+          <a onclick="switchSection('assessments')" style="font-size:14px;color:#888;cursor:pointer;" data-i18n="sd.quizd.back">← Back to Assessments</a>
+        </div>
+      </section>
+
+      <!-- QUIZ SESSION -->
+      <section id="section-quiz-session" class="page-section hidden">
+        <div style="max-width:760px;">
+          <div class="quiz-timer-row">
+            <div class="timer-pill" id="timerPill">⏱ <span id="timerDisplay">—</span></div>
+            <div style="font-size:14px;color:var(--text-mid);" id="qProgressText"></div>
+          </div>
+          <div class="q-progress-bar-wrap"><div class="q-progress-bar" id="qProgressBar" style="width:0%"></div></div>
+          <div class="q-text" id="qText"></div>
+          <div id="qMultiHint" class="hidden" style="font-size:12px;color:var(--text-muted);margin-bottom:12px;font-style:italic;" data-i18n="sd.session.multi">Select all correct answers</div>
+          <div class="q-options" id="qOptions"></div>
+          <div class="quiz-nav-row">
+            <button class="btn-q-nav" id="prevBtn" onclick="prevQ()" data-i18n="sd.session.prev">← Previous</button>
+            <button class="btn-q-nav" id="nextBtn" onclick="nextQ()" data-i18n="sd.session.next">Next →</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- QUIZ RESULT -->
+      <section id="section-quiz-result" class="page-section hidden">
+        <div class="result-screen">
+          <div class="score-ring" id="scoreRing">
+            <div class="score-pct" id="scorePct">0%</div>
+            <div class="score-lbl" data-i18n="sd.result.score">Score</div>
+          </div>
+          <h2 style="font-weight:700;font-size:24px;margin-bottom:8px;" data-i18n="sd.result.title">Quiz Completed!</h2>
+          <p id="scoreDetail" style="font-size:15px;color:#444;margin-bottom:20px;"></p>
+          <div class="result-btns">
+            <button class="btn-q-nav"  onclick="switchSection('assessments')" data-i18n="sd.result.back">Back to Assessments</button>
+            <button class="btn-enroll" style="width:auto;padding:0 28px;" onclick="viewReviewFromResult()" data-i18n="sd.result.review">Review Answers</button>
+            <button class="btn-enroll" style="width:auto;padding:0 28px;background:#475569;" onclick="switchSection('performance')" data-i18n="sd.result.grades">View My Grades</button>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<!-- Profile Update Modal (REQ-6) -->
+<div class="modal-overlay" id="profileModal">
+  <div class="modal-box" style="max-width:480px;background:#fff;border-radius:12px;padding:32px;width:90%;max-height:85vh;overflow-y:auto;">
+    <div style="font-size:18px;font-weight:700;color:#0f172a;margin-bottom:20px;">Edit Profile</div>
+    <div class="create-field" style="margin-bottom:14px;">
+      <label style="font-size:13px;color:var(--text-mid);margin-bottom:6px;display:block;">Full Name:</label>
+      <input style="width:100%;height:44px;border:1.5px solid var(--border);border-radius:8px;padding:0 14px;font-size:14px;font-family:'DM Sans',sans-serif;" id="profileName" placeholder="Full Names"/>
+    </div>
+    <div style="font-size:14px;font-weight:600;color:var(--text-dark);margin:16px 0 10px;">Change Password (optional)</div>
+    <div class="create-field" style="margin-bottom:14px;">
+      <label style="font-size:13px;color:var(--text-mid);margin-bottom:6px;display:block;">Current Password:</label>
+      <input style="width:100%;height:44px;border:1.5px solid var(--border);border-radius:8px;padding:0 14px;font-size:14px;font-family:'DM Sans',sans-serif;" type="password" id="profileCurrentPass" placeholder="Current password"/>
+    </div>
+    <div class="create-field" style="margin-bottom:14px;">
+      <label style="font-size:13px;color:var(--text-mid);margin-bottom:6px;display:block;">New Password:</label>
+      <input style="width:100%;height:44px;border:1.5px solid var(--border);border-radius:8px;padding:0 14px;font-size:14px;font-family:'DM Sans',sans-serif;" type="password" id="profileNewPass" placeholder="New password"/>
+    </div>
+    <div style="display:flex;gap:12px;margin-top:24px;justify-content:flex-end;">
+      <button style="padding:0 20px;height:40px;border-radius:8px;border:1.5px solid var(--border);background:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:14px;" onclick="document.getElementById('profileModal').classList.remove('open')">Cancel</button>
+      <button class="btn-enroll" style="height:40px;width:auto;padding:0 24px;" onclick="saveProfile()">Save Profile</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/i18n.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/components.js"></script>
+<script>
+  if (!requireAuth('student')) {}
+
+  const FILE_ICONS  = { video:'fa-film', pdf:'fa-file-pdf', slides:'fa-display', document:'fa-file-word', image:'fa-image' };
+  const FILE_LABELS = { video:'Video', pdf:'PDF', slides:'Slides', document:'Document', image:'Image' };
+
+  let allCourses         = [];
+  let enrolledIds        = new Set();
+  let completedLessonIds = new Set();
+  let selectedCourse     = null;
+  let selectedModule     = null;
+  let selectedAssessment = null;
+  let quizQuestions      = [];
+  let currentQ           = 0;
+  let answers            = {};
+  let timerSecs          = 0, timerInterval = null;
+  let lastSubmission     = null;
+
+  // ── Init ──────────────────────────────────────────────────────
+  (function init() {
+    const user = Auth.getUser();
+    if (!user) return;
+    const initials = user.full_name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+    document.getElementById('topbarAvatar').textContent = initials;
+    document.getElementById('topbarName').textContent   = user.full_name;
+    document.getElementById('topbarRole').textContent   = t(`role.${user.role}`) || user.role;
+    // Update role label when language switches
+    document.addEventListener('iga-lang-changed', () => {
+      document.getElementById('topbarRole').textContent = t(`role.${user.role}`) || user.role;
+      document.querySelector('.topbar-logout')?.setAttribute('title', t('topbar.logout'));
+    });
+    document.querySelector('.topbar-logout')?.setAttribute('title', t('topbar.logout'));
+    updateSidebarLang();
+    document.addEventListener('iga-lang-changed', () => { updateSidebarLang(); applyLang(); renderDynamic(); });
+    loadCourses(); loadGrades(); loadAssessments(); loadCompletions();
+  })();
+
+  function updateSidebarLang() {
+    const el = document.getElementById('sidebarLangLabel');
+    if (el) el.textContent = t('sidebar.switchlang');
+  }
+
+  function renderDynamic() {
+    renderCourses();
+    loadStudentsGrades();
+    loadAssessmentsUI();
+  }
+
+  // ── Section switching ─────────────────────────────────────────
+  const SECTION_TITLES = {
+    'courses':      ['sd.courses.title', 'sd.courses.title'],
+    'enroll':       ['sd.courses.title', ''],
+    'modules':      ['sd.courses.title', 'sd.modules.title'],
+    'lessons':      ['', ''],
+    'lesson':       ['', ''],
+    'performance':  ['', 'sd.perf.title'],
+    'grade-review': ['sd.perf.title', ''],
+    'assessments':  ['', 'sd.quiz.title'],
+    'quiz-detail':  ['sd.nav.assessments', ''],
+    'quiz-session': ['sd.nav.assessments', ''],
+    'quiz-result':  ['', 'sd.result.title'],
+  };
+  function switchSection(key, btn) {
+    document.querySelectorAll('.page-section').forEach(s => s.classList.add('hidden'));
+    document.getElementById(`section-${key}`).classList.remove('hidden');
+    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+    const nb = document.querySelector(`[data-key="${key.split('-')[0]}"]`);
+    if (btn) btn.classList.add('active'); else if (nb) nb.classList.add('active');
+    const [bc, h] = SECTION_TITLES[key] || ['',''];
+    document.getElementById('topbarBreadcrumb').textContent = bc ? t(bc) : '';
+    if (h) document.getElementById('topbarHeading').textContent = t(h);
+  }
+
+  // ── Profile (REQ-6) ───────────────────────────────────────────
+  function openProfileModal() {
+    const user = Auth.getUser();
+    document.getElementById('profileName').value        = user?.full_name || '';
+    document.getElementById('profileCurrentPass').value = '';
+    document.getElementById('profileNewPass').value     = '';
+    document.getElementById('profileModal').classList.add('open');
+  }
+
+  async function saveProfile() {
+    const payload = {};
+    const name    = document.getElementById('profileName').value.trim();
+    const curPass = document.getElementById('profileCurrentPass').value;
+    const newPass = document.getElementById('profileNewPass').value;
+    if (name) payload.full_name = name;
+    if (newPass) {
+      if (!curPass) { showToast('Enter your current password to change it.', 'error'); return; }
+      payload.current_password = curPass;
+      payload.new_password     = newPass;
+    }
+    const res = await AuthAPI.updateMe(payload);
+    if (res.ok) {
+      showToast('Profile updated!', 'success');
+      const user = Auth.getUser();
+      if (name) user.full_name = name;
+      localStorage.setItem('iga_user', JSON.stringify(user));
+      document.getElementById('topbarName').textContent = name || user.full_name;
+      const initials = (name||user.full_name).split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+      document.getElementById('topbarAvatar').textContent = initials;
+      document.getElementById('profileModal').classList.remove('open');
+    } else {
+      showToast(res.data.message || 'Failed to update profile.', 'error');
+    }
+  }
+
+  // ── Courses ───────────────────────────────────────────────────
+  async function loadCourses() {
+    const [coursesRes, enrollRes] = await Promise.all([CourseAPI.list(), CourseAPI.myEnrollments()]);
+    document.getElementById('coursesLoading').style.display = 'none';
+    if (!coursesRes.ok) { showToast(t('err.load.course'), 'error'); return; }
+    allCourses  = coursesRes.data.data || [];
+    enrolledIds = new Set((enrollRes.data.data||[]).map(e=>e.course_id));
+    renderCourses();
+  }
+
+  function renderCourses() {
+    const grid = document.getElementById('coursesGrid');
+    if (!allCourses.length) {
+      grid.innerHTML = `<div style="color:var(--text-muted);font-size:14px;">${t('sd.courses.empty')}</div>`;
+      return;
+    }
+    grid.innerHTML = allCourses.map((c,i) => `
+      <div class="course-card" onclick="openCourse(${c.id})">
+        <div class="course-thumb"><i class="fa-regular fa-newspaper"></i></div>
+        <div class="course-body">
+          <div class="course-num">${String(i+1).padStart(2,'0')}</div>
+          <div class="course-name">${c.title}</div>
+          <div class="course-modules">${String(c.module_count).padStart(2,'0')} ${t('sd.courses.modules')}</div>
+          ${enrolledIds.has(c.id) ? `<div style="margin-top:6px;font-size:11px;color:#16a34a;font-weight:600;">${t('sd.courses.enrolled')}</div>` : ''}
+        </div>
+      </div>`).join('');
+  }
+
+  async function openCourse(id) {
+    const res = await CourseAPI.get(id);
+    if (!res.ok) { showToast(t('err.load.course'), 'error'); return; }
+    selectedCourse = res.data.data;
+    const enrolled = enrolledIds.has(id);
+    document.getElementById('enrollTitle').textContent      = selectedCourse.title;
+    document.getElementById('enrollCourseName').textContent = selectedCourse.title;
+    document.getElementById('enrollCourseDesc').textContent = selectedCourse.description || '';
+    document.getElementById('enrollGuidelines').textContent = selectedCourse.guidelines ? t('sd.enroll.guidelines') + ' ' + selectedCourse.guidelines : '';
+    document.getElementById('enrollIllo').innerHTML         = '<i class="fa-regular fa-newspaper"></i>';
+    document.getElementById('topbarHeading').textContent    = selectedCourse.title;
+    document.getElementById('topbarBreadcrumb').textContent = t('sd.courses.title');
+    const btn = document.getElementById('enrollBtn');
+    const cont = document.getElementById('continueSection');
+    if (enrolled) {
+      btn.textContent  = t('sd.enroll.enrolled'); btn.disabled = true; btn.style.opacity = '.6';
+      cont.classList.remove('hidden');
+    } else {
+      btn.textContent  = t('sd.enroll.btn'); btn.disabled = false; btn.style.opacity = '1';
+      cont.classList.add('hidden');
+    }
+    switchSection('enroll');
+  }
+
+  async function doEnroll() {
+    const res = await CourseAPI.enroll(selectedCourse.id);
+    if (res.ok) {
+      showToast(t('toast.enrolled'), 'success');
+      enrolledIds.add(selectedCourse.id);
+      renderCourses(); loadAssessments();
+      openCourse(selectedCourse.id);
+    } else { showToast(res.data.message || t('err.enroll.fail'), 'error'); }
+  }
+
+  // ── Completions ───────────────────────────────────────────────
+  async function loadCompletions() {
+    const res = await CourseAPI.myCompletions();
+    if (res.ok) completedLessonIds = new Set(res.data.data || []);
+  }
+
+  async function toggleLessonDone(event, lessonId) {
+    event.stopPropagation();
+    const isDone = completedLessonIds.has(lessonId);
+    const res    = isDone ? await CourseAPI.uncompleteLesson(lessonId) : await CourseAPI.completeLesson(lessonId);
+    if (res.ok) {
+      if (isDone) completedLessonIds.delete(lessonId);
+      else        completedLessonIds.add(lessonId);
+      const mi = (selectedCourse?.modules||[]).findIndex(m=>m.id===selectedModule?.id);
+      if (mi>=0) openModule(mi);
+      if (selectedCourse) openCourseModules();
+    } else { showToast(t('err.enroll.fail'), 'error'); }
+  }
+
+  async function toggleLessonDoneFromViewer(lessonId) {
+    const isDone = completedLessonIds.has(lessonId);
+    const res    = isDone ? await CourseAPI.uncompleteLesson(lessonId) : await CourseAPI.completeLesson(lessonId);
+    if (res.ok) {
+      if (isDone) completedLessonIds.delete(lessonId); else completedLessonIds.add(lessonId);
+      const btn  = document.getElementById('lessonDoneBtn');
+      const nowDone = completedLessonIds.has(lessonId);
+      if (btn) {
+        btn.className = `btn-mark-done ${nowDone?'is-done':'not-done'}`;
+        btn.innerHTML = nowDone
+          ? `<i class="fa-solid fa-circle-check"></i> ${t('sd.lessons.markedone')}`
+          : `<i class="fa-regular fa-circle-check"></i> ${t('sd.lessons.markdone')}`;
+      }
+      const span = btn?.nextElementSibling;
+      if (span) span.textContent = nowDone ? t('sd.lessons.done.msg') : t('sd.lessons.done.hint');
+      showToast(isDone ? t('toast.lesson.undone') : t('toast.lesson.done'), isDone?'info':'success');
+    } else { showToast(t('err.enroll.fail'), 'error'); }
+  }
+
+  // ── Modules ───────────────────────────────────────────────────
+  function openCourseModules() {
+    const modules = selectedCourse?.modules || [];
+    document.getElementById('topbarHeading').textContent    = selectedCourse.title;
+    document.getElementById('topbarBreadcrumb').textContent = t('sd.courses.title');
+    const container = document.getElementById('modulesContainer');
+    if (!modules.length) {
+      container.innerHTML = `<div style="color:var(--text-muted);font-size:14px;">${t('sd.modules.empty')}</div>`;
+    } else {
+      container.innerHTML = modules.map((m,i) => {
+        const lessons = m.lessons || [];
+        const done    = lessons.filter(l=>completedLessonIds.has(l.id)).length;
+        const total   = lessons.length;
+        const pct     = total>0 ? Math.round((done/total)*100) : 0;
+        const allDone = total>0 && done===total;
+        return `
+          <div class="module-card${allDone?' done':''}" onclick="openModule(${i})"
+               style="${allDone?'border-color:#16a34a;background:#f0fdf4;':''}">
+            <div class="module-card-left">
+              <div class="module-icon" style="${allDone?'background:#dcfce7;color:#16a34a;':''}">
+                <i class="fa-solid ${allDone?'fa-circle-check':'fa-book-open'}"></i>
+              </div>
+              <div>
+                <div class="module-card-title">${t('sd.session.question').replace('Ikibazo','').replace('Question','')} ${i+1}: ${m.title}</div>
+                ${m.description?`<div class="module-card-desc">${m.description}</div>`:''}
+                <div class="module-card-count">${done}/${total} ${total!==1?t('sd.modules.lessons'):t('sd.modules.lesson')} ${t('sd.modules.completed')}</div>
+                ${total>0?`<div class="module-progress-wrap" style="width:160px;"><div class="module-progress-bar" style="width:${pct}%;"></div></div>`:''}
+              </div>
+            </div>
+            <i class="fa-solid fa-chevron-right" style="color:var(--text-muted);font-size:14px;"></i>
+          </div>`;
+      }).join('');
+    }
+    switchSection('modules');
+    const nb = document.querySelector('[data-key="courses"]'); if (nb) nb.classList.add('active');
+  }
+
+  function backToCourse() {
+    if (selectedCourse) openCourse(selectedCourse.id); else switchSection('courses');
+  }
+
+  // ── Lessons ───────────────────────────────────────────────────
+  function openModule(moduleIndex) {
+    const modules = selectedCourse?.modules || [];
+    selectedModule = modules[moduleIndex];
+    if (!selectedModule) return;
+    document.getElementById('topbarHeading').textContent    = `${selectedModule.title}`;
+    document.getElementById('topbarBreadcrumb').textContent = selectedCourse.title + ':';
+    const lessons   = selectedModule.lessons || [];
+    const container = document.getElementById('lessonsContainer');
+    if (!lessons.length) {
+      container.innerHTML = `<div style="color:var(--text-muted);font-size:14px;">${t('sd.lessons.empty')}</div>`;
+    } else {
+      const done  = lessons.filter(l=>completedLessonIds.has(l.id)).length;
+      const total = lessons.length;
+      const pct   = Math.round((done/total)*100);
+      container.innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <div style="font-size:18px;font-weight:700;color:var(--text-dark);">${selectedModule.title}</div>
+          <div style="font-size:13px;color:${done===total?'#16a34a':'var(--text-muted)'};">
+            ${done===total ? `<i class="fa-solid fa-circle-check" style="margin-right:4px;"></i>${t('sd.modules.alldone')}` : `${done}/${total} ${t('sd.modules.completed')}`}
+          </div>
+        </div>
+        ${selectedModule.description?`<p style="font-size:14px;color:var(--text-muted);margin-bottom:12px;">${selectedModule.description}</p>`:''}
+        <div class="module-progress-wrap" style="margin-bottom:20px;"><div class="module-progress-bar" style="width:${pct}%;"></div></div>
+        ${lessons.map(l => {
+          const isDone = completedLessonIds.has(l.id);
+          return `
+            <div class="lesson-item${isDone?' done':''}" onclick='openLesson(${JSON.stringify(l).replace(/'/g,"&#39;")})'>
+              <div class="lesson-icon-wrap"><i class="fa-solid ${FILE_ICONS[l.file_type]||'fa-file'}"></i></div>
+              <div class="lesson-meta">
+                <div class="lesson-title-text">${l.title}</div>
+                <div class="lesson-type-text">${FILE_LABELS[l.file_type]||'File'}</div>
+              </div>
+              ${isDone ? `<span class="lesson-done-badge"><i class="fa-solid fa-circle-check"></i>${t('sd.lessons.markedone')}</span>` : ''}
+              <button class="btn-mark-done ${isDone?'is-done':'not-done'}" onclick="toggleLessonDone(event,${l.id})">
+                ${isDone
+                  ? `<i class="fa-solid fa-rotate-left"></i> ${t('sd.lessons.undo')}`
+                  : `<i class="fa-regular fa-circle-check"></i> ${t('sd.lessons.markdone')}`}
+              </button>
+            </div>`;
+        }).join('')}`;
+    }
+    switchSection('lessons');
+    const nb = document.querySelector('[data-key="courses"]'); if (nb) nb.classList.add('active');
+  }
+
+  // ── Lesson viewer ─────────────────────────────────────────────
+  function resolveFileUrl(url) {
+    if (!url) return null;
+    if (url.startsWith('/courses/uploads')) return `http://127.0.0.1:5000${url}`;
+    return url;
+  }
+
+  function openLesson(lesson) {
+    document.getElementById('lessonViewTitle').textContent  = lesson.title;
+    document.getElementById('lessonViewType').textContent   = FILE_LABELS[lesson.file_type]||'File';
+    document.getElementById('topbarHeading').textContent    = lesson.title;
+    document.getElementById('topbarBreadcrumb').textContent = selectedModule?.title||'';
+    const fileUrl = resolveFileUrl(lesson.file_url);
+    const content = document.getElementById('lessonViewContent');
+    if (!fileUrl) {
+      content.innerHTML = `<div style="color:var(--text-muted);font-size:14px;padding:40px;text-align:center;border:1px dashed var(--border);border-radius:8px;"><i class="fa-solid fa-hourglass-half" style="font-size:32px;margin-bottom:12px;display:block;color:#d97706;"></i>${t('sd.lessons.nofile')}</div>`;
+    } else if (lesson.file_type==='video') {
+      content.innerHTML = `<video controls style="width:100%;max-width:800px;border-radius:8px;" controlsList="nodownload"><source src="${fileUrl}" type="video/mp4"/><source src="${fileUrl}"/>Your browser does not support video.</video>`;
+    } else if (lesson.file_type==='image') {
+      content.innerHTML = `<img src="${fileUrl}" style="max-width:100%;border-radius:8px;" alt="${lesson.title}"/>`;
+    } else if (lesson.file_type==='pdf') {
+      content.innerHTML = `<object data="${fileUrl}" type="application/pdf" style="width:100%;height:650px;border-radius:8px;border:1px solid var(--border);"><div style="padding:24px;text-align:center;"><a href="${fileUrl}" target="_blank" class="btn-enroll" style="width:auto;padding:0 24px;display:inline-flex;text-decoration:none;"><i class="fa-solid fa-arrow-up-right-from-square" style="margin-right:8px;"></i>${t('sd.lessons.openpdf')}</a></div></object>`;
+    } else {
+      content.innerHTML = `<div style="padding:32px;background:#f8fafc;border:1px solid var(--border);border-radius:8px;text-align:center;"><i class="fa-solid ${FILE_ICONS[lesson.file_type]||'fa-file'}" style="font-size:52px;color:var(--brand);margin-bottom:16px;display:block;"></i><div style="font-size:16px;font-weight:600;color:var(--text-dark);margin-bottom:8px;">${lesson.title}</div><a href="${fileUrl}" target="_blank" class="btn-enroll" style="width:auto;padding:0 24px;display:inline-flex;text-decoration:none;"><i class="fa-solid fa-download" style="margin-right:8px;"></i>${t('sd.lessons.open')}</a></div>`;
+    }
+    const isDone = completedLessonIds.has(lesson.id);
+    content.innerHTML += `
+      <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--border);display:flex;align-items:center;gap:12px;">
+        <button class="btn-mark-done ${isDone?'is-done':'not-done'}" id="lessonDoneBtn" onclick="toggleLessonDoneFromViewer(${lesson.id})">
+          ${isDone ? `<i class="fa-solid fa-circle-check"></i> ${t('sd.lessons.markedone')}` : `<i class="fa-regular fa-circle-check"></i> ${t('sd.lessons.markdone')}`}
+        </button>
+        <span style="font-size:13px;color:${isDone?'#16a34a':'var(--text-muted)'};">${isDone ? t('sd.lessons.done.msg') : t('sd.lessons.done.hint')}</span>
+      </div>`;
+    switchSection('lesson');
+    const nb = document.querySelector('[data-key="courses"]'); if (nb) nb.classList.add('active');
+    window._currentLessonId = lesson.id;
+  }
+
+  // ── Grades ────────────────────────────────────────────────────
+  let _gradeSubs = [];
+  async function loadGrades() {
+    const res = await GradeAPI.myGrades();
+    document.getElementById('gradesLoading').style.display = 'none';
+    if (!res.ok) return;
+    _gradeSubs = res.data.data || [];
+    window._submissions = _gradeSubs;
+    renderGrades();
+  }
+
+  function loadStudentsGrades() { renderGrades(); }
+
+  function renderGrades() {
+    const submissions = _gradeSubs;
+    if (!submissions.length) {
+      document.getElementById('gradesBody').innerHTML = `<div style="color:var(--text-muted);font-size:14px;padding:16px 0;">${t('sd.perf.empty')}</div>`;
+      document.getElementById('overallGrade').textContent = `${t('sd.perf.overall')} —`;
+      return;
+    }
+    const graded  = submissions.filter(s=>s.status==='graded');
+    const earned  = graded.reduce((sum,s)=>sum+(s.score||0),0);
+    const total   = graded.reduce((sum,s)=>sum+(s.max_score||0),0);
+    const overall = total>0 ? ((earned/total)*100).toFixed(1) : 0;
+    document.getElementById('overallGrade').textContent = `${t('sd.perf.overall')} ${overall}%`;
+    document.getElementById('gradesBody').innerHTML = submissions.map(s => `
+      <div class="perf-row" onclick="openGradeReview(${s.id})">
+        <div style="font-weight:500;">${s.assessment_title||t('sd.perf.col.assess')} <span style="font-size:11px;color:var(--text-muted);">${s.course_title||''}</span></div>
+        <div>${s.submitted_at?s.submitted_at.slice(0,10):'—'}</div>
+        <div>${s.status==='graded'?`<span class="perf-graded">${t('sd.perf.graded')}</span>`:`<span class="badge-pending-sm">${t('sd.perf.pending')}</span>`}</div>
+        <div>${s.status==='graded'&&s.percentage!==null?`<strong>${s.percentage}%</strong>`:'—'} <span style="font-size:11px;color:var(--brand);margin-left:8px;">${t('sd.perf.view')}</span></div>
+      </div>`).join('');
+  }
+
+  async function openGradeReview(submissionId) {
+    const sub = (window._submissions||[]).find(s=>s.id===submissionId);
+    if (!sub) return;
+    document.getElementById('reviewTitle').textContent = sub.assessment_title || t('sd.perf.col.assess');
+    document.getElementById('reviewMeta').textContent  = `${sub.status==='graded'?`${t('sd.perf.col.score')}: ${sub.score}/${sub.max_score} (${sub.percentage}%)`:t('sd.perf.pending')} · ${sub.submitted_at?.slice(0,10)||''}`;
+    document.getElementById('topbarHeading').textContent = t('sd.perf.title');
+    const review = sub.review || [];
+    document.getElementById('reviewBody').innerHTML = review.map(q => {
+      let cls='pending', iconClass='review-pending-lbl';
+      if (q.question_type==='short_answer') {
+        if (q.is_correct===true)       { cls='correct';   iconClass='review-correct-lbl'; }
+        else if (q.is_correct===false) { cls='incorrect'; iconClass='review-incorrect-lbl'; }
+      } else {
+        cls       = q.is_correct?'correct':'incorrect';
+        iconClass = q.is_correct?'review-correct-lbl':'review-incorrect-lbl';
+      }
+      const sAns = Array.isArray(q.student_answer)?q.student_answer.join(', '):(q.student_answer||'—');
+      const cAns = Array.isArray(q.correct_answer)?q.correct_answer.join(', '):(q.correct_answer||'');
+      const statusIcon = cls==='correct'
+        ? '<i class="fa-solid fa-circle-check" style="color:#16a34a;margin-right:6px;"></i>'
+        : cls==='incorrect'
+        ? '<i class="fa-solid fa-circle-xmark" style="color:#dc2626;margin-right:6px;"></i>'
+        : '<i class="fa-solid fa-hourglass-half" style="color:#d97706;margin-right:6px;"></i>';
+      const statusLabel = cls==='correct'?t('sd.review.status.correct'):cls==='incorrect'?t('sd.review.status.incorrect'):t('sd.review.status.pending');
+      return `
+        <div class="review-item ${cls}">
+          <div class="review-q">${statusIcon}${q.question_text}</div>
+          <div class="review-answer"><span class="review-label">${t('sd.review.your')}</span> ${sAns}</div>
+          ${q.question_type!=='short_answer'&&cAns?`<div class="review-answer"><span class="${iconClass}">${t('sd.review.correct')}</span> ${cAns}</div>`:''}
+          <div class="review-answer"><span class="review-label">${t('sd.review.points')}</span> ${q.points_earned!==undefined?q.points_earned:(q.is_correct?q.points:0)} / ${q.points}</div>
+          ${q.teacher_comment?`<div class="review-comment"><i class="fa-solid fa-comment" style="margin-right:4px;"></i>${t('sd.review.teacher')} ${q.teacher_comment}</div>`:''}
+          <div style="font-size:12px;margin-top:6px;" class="${iconClass}">${statusIcon}${statusLabel}</div>
+        </div>`;
+    }).join('');
+    switchSection('grade-review');
+  }
+
+  // ── Assessments ───────────────────────────────────────────────
+  let _allAssessments = [];
+  async function loadAssessments() {
+    const res = await AssessmentAPI.listAll();
+    document.getElementById('assessmentsLoading').style.display = 'none';
+    if (!res.ok) return;
+    _allAssessments = res.data.data || [];
+    loadAssessmentsUI();
+  }
+
+  function loadAssessmentsUI() {
+    const assessments = _allAssessments;
+    const grid = document.getElementById('quizGrid');
+    if (!assessments.length) {
+      grid.innerHTML = `<div style="color:var(--text-muted);font-size:14px;">${t('sd.quiz.empty')}</div>`;
+      return;
+    }
+    grid.innerHTML = assessments.map(a => {
+      const canAttempt = a.can_attempt;
+      return `
+        <div class="quiz-card" onclick="openQuiz(${a.id})" style="cursor:pointer;">
+          <div class="quiz-folder"><i class="fa-solid fa-folder-open"></i></div>
+          <div class="quiz-label-text">${a.course_title||''}</div>
+          <div class="quiz-name">${a.title}</div>
+          <div class="quiz-questions">${a.question_count} ${t('sd.quiz.questions')}</div>
+          ${a.time_limit?`<div style="font-size:11px;color:var(--text-muted);margin-top:4px;"><i class="fa-regular fa-clock"></i> ${a.time_limit} ${t('sd.quiz.minutes')}</div>`:''}
+          <div style="margin-top:6px;font-size:11px;color:${canAttempt?'#16a34a':'#dc2626'};font-weight:600;">
+            ${canAttempt ? `${a.attempts_remaining} ${a.attempts_remaining!==1?t('sd.quiz.remaining'):t('sd.quiz.attempt')}` : t('sd.quiz.neattempt')}
+          </div>
+          ${a.best_submission?`<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${t('sd.quiz.best')} ${a.best_submission.percentage}%</div>`:''}
+        </div>`;
+    }).join('');
+  }
+
+  async function openQuiz(id) {
+    const res = await AssessmentAPI.get(id);
+    if (!res.ok) { showToast(t('err.load.assess'), 'error'); return; }
+    selectedAssessment = res.data.data;
+    const allRes = await AssessmentAPI.listAll();
+    const info   = (allRes.data.data||[]).find(a=>a.id===id);
+    document.getElementById('quizDetailTitle').textContent  = selectedAssessment.title;
+    document.getElementById('quizDetailMeta').textContent   = `${selectedAssessment.question_count} ${t('sd.quiz.questions')}${selectedAssessment.time_limit?' — '+selectedAssessment.time_limit+' '+t('sd.quiz.minutes'):''}`;
+    document.getElementById('quizDetailDesc').textContent   = selectedAssessment.description || '';
+    document.getElementById('topbarHeading').textContent    = selectedAssessment.title;
+    document.getElementById('topbarBreadcrumb').textContent = t('sd.nav.assessments');
+    const startBtn = document.getElementById('startQuizBtn');
+    const warning  = document.getElementById('attemptWarning');
+    if (info && !info.can_attempt) {
+      startBtn.disabled = true; startBtn.style.opacity = '.5';
+      startBtn.textContent = t('sd.quizd.noattempt');
+      warning.textContent  = `${t('sd.quizd.used')} ${selectedAssessment.max_attempts} ${t('sd.quizd.attempts')}`;
+      warning.classList.remove('hidden');
+    } else {
+      startBtn.disabled = false; startBtn.style.opacity = '1';
+      startBtn.textContent = t('sd.quizd.start');
+      if (info && info.attempts_used>0) {
+        warning.textContent = `${info.attempts_remaining} ${t('sd.quizd.left')} ${info.best_submission?.percentage||0}%.`;
+        warning.classList.remove('hidden');
+      } else { warning.classList.add('hidden'); }
+    }
+    switchSection('quiz-detail');
+    const nb = document.querySelector('[data-key="assessments"]'); if (nb) nb.classList.add('active');
+  }
+
+  // ── Quiz session ──────────────────────────────────────────────
+  function startQuiz() {
+    quizQuestions = selectedAssessment.questions || [];
+    if (!quizQuestions.length) { showToast(t('sd.quiz.empty'), 'info'); return; }
+    currentQ = 0; answers = {};
+    timerSecs = (selectedAssessment.time_limit||0) * 60;
+    renderQ();
+    switchSection('quiz-session');
+    const nb = document.querySelector('[data-key="assessments"]'); if (nb) nb.classList.add('active');
+    clearInterval(timerInterval);
+    if (timerSecs > 0) {
+      updateTimer();
+      timerInterval = setInterval(() => { timerSecs--; updateTimer(); if (timerSecs<=0) { clearInterval(timerInterval); submitQuiz(); } }, 1000);
+    } else { document.getElementById('timerDisplay').textContent = '∞'; }
+  }
+
+  function updateTimer() {
+    const m=String(Math.floor(timerSecs/60)).padStart(2,'0'), s=String(timerSecs%60).padStart(2,'0');
+    const el=document.getElementById('timerDisplay'), pill=document.getElementById('timerPill');
+    if (el) el.textContent=`${m}:${s}`;
+    if (pill && timerSecs<=60) pill.classList.add('urgent');
+  }
+
+  function renderQ() {
+    const total = quizQuestions.length;
+    const q     = quizQuestions[currentQ];
+    document.getElementById('qProgressText').textContent = `${t('sd.session.question')} ${currentQ+1} ${t('sd.session.of')} ${total}`;
+    document.getElementById('qProgressBar').style.width  = `${((currentQ+1)/total)*100}%`;
+    document.getElementById('qText').textContent = q.text;
+    const isMulti   = q.allow_multiple;
+    const multiHint = document.getElementById('qMultiHint');
+    isMulti ? multiHint.classList.remove('hidden') : multiHint.classList.add('hidden');
+    const currentAns = answers[currentQ] || (isMulti ? [] : null);
+    const optionsEl  = document.getElementById('qOptions');
+    if (q.question_type==='short_answer') {
+      optionsEl.innerHTML = `<textarea style="width:100%;max-width:680px;min-height:100px;border:1.5px solid var(--border);border-radius:var(--radius);padding:12px;font-size:15px;font-family:var(--font-main);resize:vertical;" id="shortAnswerInput" placeholder="${t('sd.session.short')}" onchange="answers[${currentQ}]=this.value">${currentAns||''}</textarea>`;
+    } else if (q.question_type==='true_false') {
+      optionsEl.innerHTML = ['true','false'].map(opt => `
+        <div class="q-option ${currentAns===opt?'selected':''}" onclick="selectAnswer(${currentQ},'${opt}',false)">
+          <div class="q-bubble">${opt==='true'?'✓':'✗'}</div>
+          <div class="q-option-text">${opt==='true'?'True':'False'}</div>
+        </div>`).join('');
+    } else {
+      optionsEl.innerHTML = (q.options||[]).map((opt,i) => {
+        const isSel = isMulti?(Array.isArray(currentAns)&&currentAns.includes(opt)):currentAns===opt;
+        return `<div class="q-option ${isSel?(isMulti?'multi-selected':'selected'):''}" onclick='selectAnswer(${currentQ},${JSON.stringify(opt)},${isMulti})'>
+          <div class="q-bubble">${String.fromCharCode(65+i)}</div>
+          <div class="q-option-text">${opt}</div>
+        </div>`;
+      }).join('');
+    }
+    const isLast = currentQ===total-1;
+    document.getElementById('prevBtn').style.visibility = currentQ===0?'hidden':'visible';
+    const nb = document.getElementById('nextBtn');
+    nb.textContent = isLast ? t('sd.session.submit') : t('sd.session.next');
+    nb.className   = isLast ? 'btn-q-submit' : 'btn-q-nav';
+    nb.onclick     = isLast ? submitQuiz : nextQ;
+  }
+
+  function selectAnswer(qIdx, value, isMulti) {
+    if (isMulti) {
+      if (!Array.isArray(answers[qIdx])) answers[qIdx]=[];
+      const i=answers[qIdx].indexOf(value);
+      if (i>=0) answers[qIdx].splice(i,1); else answers[qIdx].push(value);
+    } else { answers[qIdx]=value; }
+    renderQ();
+  }
+
+  function prevQ() { if (currentQ>0) { currentQ--; renderQ(); } }
+  function nextQ() { if (currentQ<quizQuestions.length-1) { currentQ++; renderQ(); } }
+
+  async function submitQuiz() {
+    clearInterval(timerInterval);
+    const payload={};
+    quizQuestions.forEach((q,i)=>{ payload[String(q.id)]=answers[i]!==undefined?answers[i]:''; });
+    const res = await AssessmentAPI.submit(selectedAssessment.id, { answers: payload });
+    if (!res.ok) { showToast(res.data.message||t('err.submit.fail'), 'error'); return; }
+    lastSubmission = res.data.data;
+    const pct = lastSubmission.percentage!==null ? lastSubmission.percentage : 0;
+    document.getElementById('scorePct').textContent    = `${pct}%`;
+    document.getElementById('scoreDetail').textContent = lastSubmission.status==='pending_review'
+      ? `${t('sd.result.scored')} ${lastSubmission.score}/${lastSubmission.max_score} ${t('sd.result.pending')}`
+      : `${t('sd.result.scored')} ${lastSubmission.score} ${t('sd.result.outof')} ${lastSubmission.max_score} ${t('sd.result.points')}`;
+    document.getElementById('scoreRing').className = `score-ring ${pct>=50?'pass':'fail'}`;
+    switchSection('quiz-result');
+    loadGrades(); loadAssessments();
+  }
+
+  async function viewReviewFromResult() {
+    await loadGrades();
+    if (window._submissions && lastSubmission) openGradeReview(lastSubmission.id);
+    else switchSection('performance');
+  }
+</script>
+</body>
+</html>

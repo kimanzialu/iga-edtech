@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sign Up — Iga EdTech</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="../css/shared-auth.css"/>
+</head>
+<body>
+  <div id="navbar-placeholder"></div>
+
+  <div class="auth-body">
+    <div class="auth-left">
+      <div class="illustration-box">
+        <img src="../assets/learner_register.svg" alt="Register illustration"
+             style="width:100%;height:100%;object-fit:contain;padding:20px;"/>
+      </div>
+    </div>
+
+    <div class="auth-right">
+
+      <!-- Step 1: Register -->
+      <div id="step-register" style="display:flex;flex-direction:column;align-items:center;width:100%;">
+        <div class="form-title" data-i18n="reg.title">Sign up and start learning</div>
+        <form id="registerForm" novalidate style="display:flex;flex-direction:column;align-items:center;width:100%;">
+
+          <input class="input-field" type="text" id="fullName" required
+                 data-i18n-placeholder="reg.fullname" placeholder="Full Names"/>
+          <div id="nameError" class="field-error hidden"></div>
+
+          <input class="input-field" type="email" id="email" required
+                 data-i18n-placeholder="reg.email" placeholder="Email"/>
+          <div id="emailError" class="field-error hidden"></div>
+
+          <div style="position:relative;width:100%;max-width:460px;">
+            <input class="input-field" type="password" id="password" required
+                   data-i18n-placeholder="reg.password" placeholder="Password"
+                   style="margin-bottom:0;padding-right:52px;width:100%;"/>
+            <button type="button" onclick="togglePassword('password',this)"
+                    style="position:absolute;right:16px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#94a3b8;font-size:16px;padding:0;">
+              <i class="fa-regular fa-eye"></i>
+            </button>
+          </div>
+          <div id="passError" class="field-error hidden"></div>
+
+          <button type="submit" class="btn-submit" id="registerBtn" style="margin-top:16px;"
+                  data-i18n="reg.btn">Sign Up</button>
+        </form>
+
+        <div class="switch-box">
+          <span data-i18n="reg.hasaccount">Already have an account?</span>
+          <a href="login.html" data-i18n="reg.login"> Log in</a>
+        </div>
+        <div style="margin-top:10px;text-align:center;">
+          <a href="teacher-register.html" data-i18n="reg.teacher"
+             style="font-size:13px;color:#2563EB;font-weight:600;">Are you a teacher? Register here →</a>
+        </div>
+      </div>
+
+      <!-- Step 2: OTP -->
+      <div id="step-verify" class="hidden" style="display:flex;flex-direction:column;align-items:center;width:100%;">
+        <div class="form-title" data-i18n="otp.title">Verify your email</div>
+        <div style="text-align:center;margin-bottom:24px;">
+          <div style="font-size:56px;margin-bottom:12px;color:#2563EB;">
+            <i class="fa-solid fa-envelope"></i>
+          </div>
+          <p style="font-size:15px;color:#475569;line-height:1.7;">
+            <span data-i18n="otp.sent">We sent a 6-digit code to</span><br/>
+            <strong id="verifyEmailDisplay" style="color:#0f172a;"></strong>
+          </p>
+        </div>
+        <form id="verifyForm" novalidate style="display:flex;flex-direction:column;align-items:center;width:100%;">
+          <input type="text" class="otp-input" id="otpCode" placeholder="000000" maxlength="6"/>
+          <div id="otpError" class="field-error hidden" style="text-align:center;"></div>
+          <button type="submit" class="btn-submit" id="verifyBtn"
+                  data-i18n="otp.btn">Verify Email</button>
+        </form>
+        <div class="switch-box">
+          <span data-i18n="otp.resend">Didn't receive it?</span>
+          <a id="resendLink" style="cursor:pointer;" data-i18n="otp.resendlink"> Resend code</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="footer-placeholder"></div>
+
+  <script src="../js/i18n.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/components.js"></script>
+  <script>
+    if (typeof Auth !== 'undefined' && Auth.isLoggedIn()) redirectToDashboard(Auth.getRole());
+
+    let registeredEmail = '';
+
+    function togglePassword(id, btn) {
+      const input = document.getElementById(id);
+      const isHidden = input.type === 'password';
+      input.type = isHidden ? 'text' : 'password';
+      btn.innerHTML = isHidden
+        ? '<i class="fa-regular fa-eye-slash"></i>'
+        : '<i class="fa-regular fa-eye"></i>';
+    }
+
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn      = document.getElementById('registerBtn');
+      const fullName = document.getElementById('fullName');
+      const email    = document.getElementById('email');
+      const password = document.getElementById('password');
+
+      ['nameError','emailError','passError'].forEach(id => {
+        document.getElementById(id).textContent='';
+        document.getElementById(id).classList.add('hidden');
+      });
+      [fullName, email, password].forEach(el => el.classList.remove('error'));
+
+      let valid = true;
+      if (!fullName.value.trim()) { document.getElementById('nameError').textContent=t('err.required.name');  document.getElementById('nameError').classList.remove('hidden');  fullName.classList.add('error');  valid=false; }
+      if (!email.value.trim())    { document.getElementById('emailError').textContent=t('err.required.email'); document.getElementById('emailError').classList.remove('hidden'); email.classList.add('error');    valid=false; }
+      if (!password.value)        { document.getElementById('passError').textContent=t('err.required.pass');  document.getElementById('passError').classList.remove('hidden');  password.classList.add('error'); valid=false; }
+      if (!valid) return;
+
+      setLoading(btn, true);
+      const res = await AuthAPI.registerStudent({
+        full_name: fullName.value.trim(), email: email.value.trim(),
+        password: password.value, receive_promotions: false,
+      });
+      setLoading(btn, false);
+
+      if (res.ok) {
+        registeredEmail = email.value.trim();
+        document.getElementById('verifyEmailDisplay').textContent = registeredEmail;
+        document.getElementById('step-register').classList.add('hidden');
+        document.getElementById('step-verify').classList.remove('hidden');
+        showToast(t('toast.created'), 'success');
+      } else {
+        const errors = res.data.errors || {};
+        if (errors.email)    { document.getElementById('emailError').textContent = Array.isArray(errors.email)?errors.email.join(', '):errors.email; document.getElementById('emailError').classList.remove('hidden'); email.classList.add('error'); }
+        if (errors.password) { document.getElementById('passError').textContent  = Array.isArray(errors.password)?errors.password.join(', '):errors.password; document.getElementById('passError').classList.remove('hidden'); password.classList.add('error'); }
+        showToast(res.data.message || t('err.reg.failed'), 'error');
+      }
+    });
+
+    document.getElementById('verifyForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn  = document.getElementById('verifyBtn');
+      const code = document.getElementById('otpCode');
+      document.getElementById('otpError').classList.add('hidden');
+      if (code.value.length !== 6) {
+        document.getElementById('otpError').textContent = t('err.otp.length');
+        document.getElementById('otpError').classList.remove('hidden');
+        return;
+      }
+      setLoading(btn, true);
+      const res = await AuthAPI.verifyEmail({ email: registeredEmail, code: code.value.trim() });
+      setLoading(btn, false);
+      if (res.ok) {
+        showToast(t('toast.verified'), 'success');
+        setTimeout(() => window.location.href = 'login.html', 1000);
+      } else {
+        document.getElementById('otpError').textContent = res.data.message || t('err.otp.length');
+        document.getElementById('otpError').classList.remove('hidden');
+      }
+    });
+
+    document.getElementById('resendLink').addEventListener('click', async () => {
+      const res = await AuthAPI.resendOTP({ email: registeredEmail, purpose: 'email_verification' });
+      showToast(res.ok ? t('toast.code.sent') : t('toast.code.failed'), res.ok ? 'success' : 'error');
+    });
+  </script>
+</body>
+</html>

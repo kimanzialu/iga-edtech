@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Teacher Dashboard — Iga EdTech</title>
+  <link rel="stylesheet" href="../css/main.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    .assessment-form { max-width:720px; }
+    .assessment-meta-grid { display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px; }
+    .question-block { background:#fff;border:1px solid var(--border);border-radius:8px;padding:20px;margin-bottom:16px; }
+    .question-block-header { display:flex;align-items:center;justify-content:space-between;margin-bottom:14px; }
+    .question-num { font-size:13px;font-weight:700;color:var(--brand); }
+    .btn-remove-q { width:28px;height:28px;border-radius:50%;border:1px solid #fca5a5;background:#fff;color:#dc2626;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s; }
+    .btn-remove-q:hover { background:#fee2e2; }
+    .q-select,.q-input { width:100%;height:42px;border:1.5px solid var(--border);border-radius:var(--radius);padding:0 14px;font-size:14px;color:var(--text-dark);background:#fff;margin-bottom:10px;font-family:var(--font-main); }
+    .q-select:focus,.q-input:focus { border-color:var(--brand);outline:none;box-shadow:0 0 0 3px var(--brand-light); }
+    .q-option-row { display:flex;align-items:center;gap:8px;margin-bottom:8px; }
+    .q-option-row input[type=text] { flex:1;margin-bottom:0; }
+    .btn-add-option { font-size:13px;color:var(--brand);cursor:pointer;background:none;border:none;padding:0;font-family:var(--font-main);font-weight:600; }
+    .btn-add-option:hover { text-decoration:underline; }
+    .btn-add-question { width:100%;height:44px;border:1.5px dashed var(--border);border-radius:var(--radius);background:#fff;color:var(--brand);font-size:14px;font-weight:600;cursor:pointer;font-family:var(--font-main);transition:all .15s;margin-bottom:20px; }
+    .btn-add-question:hover { border-color:var(--brand);background:var(--brand-light); }
+    .create-label { font-size:13px;color:var(--text-mid);margin-bottom:6px;display:block; }
+    .points-input { width:80px;height:42px;border:1.5px solid var(--border);border-radius:var(--radius);padding:0 12px;font-size:14px;color:var(--text-dark);background:#fff;font-family:var(--font-main); }
+    .tf-options { display:flex;gap:12px;margin-bottom:10px; }
+    .tf-btn { flex:1;height:42px;border:1.5px solid var(--border);border-radius:var(--radius);background:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--font-main);transition:all .15s;color:var(--text-mid); }
+    .tf-btn.selected { border-color:var(--brand);background:var(--brand-light);color:var(--brand); }
+    .correct-toggle { display:flex;align-items:center;gap:6px; }
+    .correct-toggle input[type=checkbox] { width:16px;height:16px;accent-color:var(--brand);cursor:pointer; }
+    .correct-toggle label { font-size:12px;color:var(--text-muted);cursor:pointer; }
+    .perf-row-header { display:grid;grid-template-columns:2fr 2fr 1fr 1fr 1fr 80px;font-weight:600;font-size:13px;color:var(--text-muted);border-bottom:1px solid var(--border);padding-bottom:10px;margin-bottom:4px; }
+    .perf-row-data { display:grid;grid-template-columns:2fr 2fr 1fr 1fr 1fr 80px;font-size:14px;color:var(--text-mid);padding:12px 0;border-bottom:1px solid var(--border);align-items:center; }
+    .perf-row-data:last-child { border-bottom:none; }
+    .badge { font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600; }
+    .badge-published { background:#dcfce7;color:#16a34a; }
+    .badge-draft     { background:#fef9c3;color:#ca8a04; }
+    .badge-pending   { background:#fef3c7;color:#d97706; }
+    .card-actions { display:flex;gap:8px;margin-top:10px; }
+    .btn-card-action { flex:1;height:32px;font-size:12px;font-weight:600;border-radius:var(--radius);cursor:pointer;font-family:var(--font-main);transition:all .15s;display:inline-flex;align-items:center;justify-content:center;gap:4px;padding:0 10px; }
+    .btn-edit   { border:1.5px solid var(--brand);color:var(--brand);background:#fff; }
+    .btn-edit:hover { background:var(--brand-light); }
+    .btn-delete { border:1.5px solid #fca5a5;color:#dc2626;background:#fff; }
+    .btn-delete:hover { background:#fee2e2; }
+    .file-type-grid { display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:12px; }
+    .file-type-btn { height:52px;border:1.5px solid var(--border);border-radius:var(--radius);background:#fff;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:11px;color:var(--text-mid);font-family:var(--font-main);transition:all .15s; }
+    .file-type-btn i { font-size:16px; }
+    .file-type-btn.selected { border-color:var(--brand);background:var(--brand-light);color:var(--brand); }
+    .modal-overlay { display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:1000;align-items:center;justify-content:center; }
+    .modal-overlay.open { display:flex; }
+    .modal-box { background:#fff;border-radius:12px;padding:32px;max-width:600px;width:90%;max-height:85vh;overflow-y:auto; }
+    .modal-title { font-size:18px;font-weight:700;color:var(--text-dark);margin-bottom:20px; }
+    .modal-actions { display:flex;gap:12px;margin-top:24px;justify-content:flex-end; }
+    .module-block { border:1px solid var(--border);border-radius:8px;margin-bottom:12px;overflow:hidden; }
+    .module-header { display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#f8fafc;border-bottom:1px solid var(--border); }
+    .module-title-text { font-size:14px;font-weight:600;color:var(--text-dark); }
+    .lesson-row { display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border); }
+    .lesson-row:last-child { border-bottom:none; }
+    .lesson-info { display:flex;align-items:center;gap:10px; }
+    .lesson-icon-sm { width:28px;height:28px;border-radius:6px;background:var(--brand-light);display:flex;align-items:center;justify-content:center;color:var(--brand);font-size:12px; }
+    .lesson-name-sm { font-size:13px;color:var(--text-dark); }
+    .lesson-type-sm { font-size:11px;color:var(--text-muted); }
+    .btn-icon { width:28px;height:28px;border:none;background:none;cursor:pointer;color:var(--text-muted);border-radius:4px;display:flex;align-items:center;justify-content:center;transition:all .15s; }
+    .btn-icon:hover { background:var(--brand-light);color:var(--brand); }
+    .btn-icon.danger:hover { background:#fee2e2;color:#dc2626; }
+    .assessment-grade-card { background:#fff;border:1px solid var(--border);border-radius:8px;padding:20px;margin-bottom:16px;cursor:pointer;transition:all .15s; }
+    .assessment-grade-card:hover { border-color:var(--brand);box-shadow:0 2px 8px rgba(37,99,235,0.1); }
+    .assessment-grade-title { font-size:16px;font-weight:600;color:var(--text-dark);margin-bottom:4px; }
+    .assessment-grade-meta  { font-size:13px;color:var(--text-muted); }
+    .submission-list-item { display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border); }
+    .submission-list-item:last-child { border-bottom:none; }
+    .grade-card { background:#fff;border:1px solid var(--border);border-radius:8px;padding:20px;margin-bottom:16px; }
+    .grade-question { font-size:14px;font-weight:600;color:var(--text-dark);margin-bottom:8px; }
+    .grade-answer { background:#f8fafc;border-radius:6px;padding:12px;font-size:14px;color:var(--text-mid);margin-bottom:12px;line-height:1.6; }
+    .grade-row { display:flex;align-items:center;gap:10px; }
+    .grade-score-input { width:80px;height:38px;border:1.5px solid var(--border);border-radius:var(--radius);padding:0 12px;font-size:14px;font-family:var(--font-main); }
+    .grade-comment-input { flex:1;height:38px;border:1.5px solid var(--border);border-radius:var(--radius);padding:0 12px;font-size:14px;font-family:var(--font-main); }
+    .modal-upload-zone { border:1.5px dashed var(--border);border-radius:var(--radius);padding:20px;text-align:center;cursor:pointer;transition:all .15s;background:#fff;margin-bottom:10px; }
+    .modal-upload-zone:hover { border-color:var(--brand);background:var(--brand-light); }
+    .modal-upload-zone i { font-size:24px;color:var(--text-muted);display:block;margin-bottom:6px; }
+    .modal-upload-zone span { font-size:13px;color:var(--text-muted); }
+  </style>
+</head>
+<body>
+<div class="dashboard-page">
+  <aside class="sidebar">
+    <div class="sidebar-logo">Iga <span>Ed</span>Tech</div>
+    <nav class="sidebar-nav">
+      <button class="nav-item active" data-key="courses"     onclick="switchSection('courses',this)"     data-i18n="td.nav.courses">Courses</button>
+      <button class="nav-item"        data-key="performance" onclick="switchSection('performance',this)" data-i18n="td.nav.performance">Performance</button>
+      <button class="nav-item"        data-key="assessments" onclick="switchSection('assessments',this)" data-i18n="td.nav.assessments">Assessments</button>
+      <button class="nav-item"        data-key="grading"     onclick="switchSection('grading',this)">
+        <span data-i18n="td.nav.grading">Grade Submissions</span>
+        <span id="pendingBadge" class="hidden" style="margin-left:6px;background:#dc2626;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;"></span>
+      </button>
+    </nav>
+    <!-- Language toggle in sidebar -->
+    <div onclick="toggleLang()" style="margin:auto 16px 20px;padding:8px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.2);cursor:pointer;display:flex;align-items:center;gap:8px;color:rgba(255,255,255,0.75);font-size:13px;font-weight:600;">
+      <i class="fa-solid fa-globe"></i>
+      <span id="sidebarLangLabel">EN / RW</span>
+    </div>
+  </aside>
+
+  <div class="main-wrap">
+    <div class="main-topbar">
+      <div>
+        <div class="topbar-breadcrumb" id="topbarBreadcrumb"></div>
+        <div class="topbar-heading"    id="topbarHeading" data-i18n="td.courses.title">My Courses</div>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-user-info">
+          <div class="topbar-user-name" id="topbarName">—</div>
+          <div class="topbar-user-role" id="topbarRole">Teacher</div>
+        </div>
+        <div class="topbar-avatar" id="topbarAvatar" onclick="openProfileModal()" title="Edit profile" style="cursor:pointer;">—</div>
+        <button class="topbar-logout" onclick="handleLogout()" title="Logout">
+          <i class="fa-solid fa-right-from-bracket"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="page-content">
+
+      <!-- ═══ COURSES ═══ -->
+      <section id="section-courses" class="page-section">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+          <div style="font-size:20px;font-weight:600;color:var(--text-dark);" data-i18n="td.courses.title">All Courses</div>
+          <button class="btn-enroll" onclick="openCreateCourse()" data-i18n="td.courses.create">+ Create Course</button>
+        </div>
+        <div id="coursesLoading" style="color:var(--text-muted);font-size:14px;" data-i18n="td.courses.loading">Loading courses…</div>
+        <div class="courses-grid" id="coursesGrid"></div>
+      </section>
+
+      <!-- ═══ CREATE/EDIT COURSE ═══ -->
+      <section id="section-create-course" class="page-section hidden">
+        <div style="font-size:20px;font-weight:600;color:var(--text-dark);margin-bottom:24px;" id="courseFormTitle" data-i18n="td.form.course.title">Create Course</div>
+        <input type="hidden" id="editCourseId"/>
+        <div class="create-course-wrap">
+          <div>
+            <div class="create-section-title" data-i18n="td.form.course.details">Course Details</div>
+            <div class="create-field">
+              <div class="create-label" data-i18n="td.form.course.ctitle">Course Title:</div>
+              <input class="create-input" id="courseTitle" data-i18n-placeholder="td.form.course.ctitle" placeholder="Course Title"/>
+            </div>
+            <div class="create-field">
+              <div class="create-label" data-i18n="td.form.course.cdesc">Course Description:</div>
+              <textarea class="create-textarea" id="courseDesc" data-i18n-placeholder="td.form.course.cdesc" placeholder="What will students learn?"></textarea>
+            </div>
+            <div id="modulesManager" class="hidden" style="margin-top:24px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                <div class="create-section-title" style="margin-bottom:0;" data-i18n="td.modules.title">Modules &amp; Lessons</div>
+                <button class="btn-enroll" style="height:32px;font-size:12px;padding:0 16px;" onclick="showAddModuleModal()" data-i18n="td.modules.add">+ Add Module</button>
+              </div>
+              <div id="modulesContainer"></div>
+            </div>
+            <div id="firstModuleSection">
+              <div class="create-section-title" style="margin-top:24px;" data-i18n="td.form.module1">1. First Module</div>
+              <div class="create-field">
+                <div class="create-label" data-i18n="td.form.modname">Module Name:</div>
+                <input class="create-input" id="moduleName" data-i18n-placeholder="td.form.modname" placeholder="Module Name"/>
+              </div>
+              <div class="create-field">
+                <div class="create-label" data-i18n="td.form.moddesc">Module Description:</div>
+                <textarea class="create-textarea" id="moduleDesc"></textarea>
+              </div>
+              <div class="create-section-title" style="margin-top:24px;" data-i18n="td.form.lesson1">2. First Lesson</div>
+              <div class="create-field">
+                <div class="create-label" data-i18n="td.form.lesname">Lesson Name:</div>
+                <input class="create-input" id="lessonName" data-i18n-placeholder="td.form.lesname" placeholder="Lesson Name"/>
+              </div>
+              <div class="create-field">
+                <div class="create-label" data-i18n="td.form.filetype">File Type:</div>
+                <div class="file-type-grid" id="mainFileTypeGrid">
+                  <button class="file-type-btn selected" data-type="video"    onclick="selectFileType(this,'main')"><i class="fa-solid fa-film"></i>Video</button>
+                  <button class="file-type-btn"          data-type="pdf"      onclick="selectFileType(this,'main')"><i class="fa-solid fa-file-pdf"></i>PDF</button>
+                  <button class="file-type-btn"          data-type="slides"   onclick="selectFileType(this,'main')"><i class="fa-solid fa-display"></i>Slides</button>
+                  <button class="file-type-btn"          data-type="document" onclick="selectFileType(this,'main')"><i class="fa-solid fa-file-word"></i>Doc</button>
+                  <button class="file-type-btn"          data-type="image"    onclick="selectFileType(this,'main')"><i class="fa-solid fa-image"></i>Image</button>
+                </div>
+                <input type="hidden" id="selectedFileType" value="video"/>
+              </div>
+              <div class="create-field">
+                <div class="create-label" id="uploadLabel" data-i18n="td.form.upload">Upload File:</div>
+                <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
+                  <div class="upload-zone-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+                  <div id="uploadHint">Click or drag to upload</div>
+                  <input type="file" id="fileInput" style="display:none" onchange="handleFileSelect(this,'fileName')"/>
+                </div>
+                <div id="fileName" style="font-size:12px;color:var(--brand);margin-top:6px;"></div>
+                <div style="margin-top:8px;font-size:12px;color:var(--text-muted);" data-i18n="td.form.url">— or paste a URL —</div>
+                <input class="create-input" id="lessonFileUrl" placeholder="https://..." style="margin-top:6px;"/>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="create-section-title" data-i18n="td.form.course.guide">Guidelines</div>
+            <div class="create-field">
+              <textarea class="create-textarea" id="guidelines" style="min-height:157px;"></textarea>
+            </div>
+            <div class="callout-box" style="margin-top:16px;">
+              <p data-i18n="td.form.course.hint">You can add more modules and lessons after publishing.</p>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;margin-top:16px;">
+              <input type="checkbox" id="publishNow" style="width:18px;height:18px;accent-color:var(--brand);cursor:pointer;"/>
+              <label for="publishNow" style="font-size:14px;color:var(--text-mid);cursor:pointer;" data-i18n="td.form.course.publishnow">Publish immediately</label>
+            </div>
+            <button class="btn-publish" id="publishBtn" onclick="saveCourse()" style="margin-top:20px;" data-i18n="td.form.course.publish">Publish Course</button>
+          </div>
+        </div>
+        <div style="margin-top:20px;">
+          <a onclick="switchSection('courses')" style="font-size:14px;color:#888;cursor:pointer;" data-i18n="td.form.course.back">← Back to Courses</a>
+        </div>
+      </section>
+
+      <!-- ═══ PERFORMANCE ═══ -->
+      <section id="section-performance" class="page-section hidden">
+        <div class="perf-header">
+          <div>
+            <div class="perf-title" data-i18n="td.perf.title">Student Performance</div>
+            <div class="perf-subtitle" data-i18n="td.perf.sub">All enrolled students</div>
+          </div>
+          <button class="btn-enroll" id="exportBtn" onclick="exportReport()">
+            <i class="fa-solid fa-file-pdf" style="margin-right:6px;"></i><span data-i18n="td.perf.export">Export Report</span>
+          </button>
+        </div>
+        <div class="perf-row-header">
+          <div data-i18n="td.perf.col.student">Student</div>
+          <div data-i18n="td.perf.col.course">Course</div>
+          <div data-i18n="td.perf.col.status">Status</div>
+          <div data-i18n="td.perf.col.score">Score</div>
+          <div data-i18n="td.perf.col.enrolled">Enrolled</div>
+          <div data-i18n="td.perf.col.view">View</div>
+        </div>
+        <div id="studentsBody"><div style="color:var(--text-muted);font-size:14px;padding:16px 0;" data-i18n="td.perf.loading">Loading…</div></div>
+      </section>
+
+      <!-- ═══ ASSESSMENTS ═══ -->
+      <section id="section-assessments" class="page-section hidden">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+          <div style="font-size:20px;font-weight:600;color:var(--text-dark);" data-i18n="td.assess.title">All Assessments</div>
+          <button class="btn-enroll" onclick="openCreateAssessment()" data-i18n="td.assess.create">+ Create Assessment</button>
+        </div>
+        <div id="assessmentsLoading" style="color:var(--text-muted);font-size:14px;" data-i18n="td.assess.loading">Loading…</div>
+        <div class="quiz-grid" id="quizGrid"></div>
+      </section>
+
+      <!-- ═══ CREATE/EDIT ASSESSMENT ═══ -->
+      <section id="section-create-assessment" class="page-section hidden">
+        <div style="font-size:20px;font-weight:600;color:var(--text-dark);margin-bottom:24px;" id="assessmentFormTitle" data-i18n="td.aform.title">Create Assessment</div>
+        <input type="hidden" id="editAssessmentId"/>
+        <div class="assessment-form">
+          <div class="create-section-title" data-i18n="td.aform.details">Assessment Details</div>
+          <div class="create-field">
+            <label class="create-label" data-i18n="td.aform.atitle">Title:</label>
+            <input class="create-input" id="aTitle" data-i18n-placeholder="td.aform.atitle" placeholder="Title"/>
+          </div>
+          <div class="create-field">
+            <label class="create-label" data-i18n="td.aform.adesc">Description:</label>
+            <textarea class="create-textarea" id="aDesc"></textarea>
+          </div>
+          <div class="create-field">
+            <label class="create-label" data-i18n="td.aform.course">Link to Course:</label>
+            <select class="q-select" id="aCourse"><option value="" data-i18n="td.aform.selcourse">— Select a course —</option></select>
+          </div>
+          <div class="assessment-meta-grid" style="margin-top:8px;">
+            <div class="create-field" style="margin-bottom:0;">
+              <label class="create-label" data-i18n="td.aform.timelimit">Time Limit (minutes):</label>
+              <input class="create-input" id="aTimeLimit" type="number" min="1" data-i18n-placeholder="td.aform.nolimit" placeholder="Leave blank = no limit"/>
+            </div>
+            <div class="create-field" style="margin-bottom:0;">
+              <label class="create-label" data-i18n="td.aform.maxatt">Max Attempts:</label>
+              <input class="create-input" id="aMaxAttempts" type="number" min="1" max="10" value="1"/>
+            </div>
+          </div>
+          <div class="create-section-title" style="margin-top:28px;" data-i18n="td.aform.questions">Questions</div>
+          <div id="questionsContainer"></div>
+          <button class="btn-add-question" onclick="addQuestion()">
+            <i class="fa-solid fa-plus" style="margin-right:6px;"></i><span data-i18n="td.aform.addq">+ Add Question</span>
+          </button>
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+            <input type="checkbox" id="aPublish" style="width:18px;height:18px;accent-color:var(--brand);cursor:pointer;"/>
+            <label for="aPublish" style="font-size:14px;color:var(--text-mid);cursor:pointer;" data-i18n="td.aform.publish">Publish immediately</label>
+          </div>
+          <button class="btn-publish" id="saveAssessmentBtn" onclick="saveAssessment()" data-i18n="td.aform.save">Save Assessment</button>
+        </div>
+        <div style="margin-top:20px;">
+          <a onclick="switchSection('assessments')" style="font-size:14px;color:#888;cursor:pointer;" data-i18n="td.aform.back">← Back to Assessments</a>
+        </div>
+      </section>
+
+      <!-- ═══ GRADING — Step 1 ═══ -->
+      <section id="section-grading" class="page-section hidden">
+        <div style="font-size:20px;font-weight:600;color:var(--text-dark);margin-bottom:20px;" data-i18n="td.grade.title">Grade Submissions</div>
+        <div id="gradingAssessmentList">
+          <div style="color:var(--text-muted);font-size:14px;" data-i18n="td.grade.loading">Loading pending assessments…</div>
+        </div>
+      </section>
+
+      <!-- ═══ GRADING — Step 2 ═══ -->
+      <section id="section-grading-submissions" class="page-section hidden">
+        <div style="font-size:20px;font-weight:600;color:var(--text-dark);margin-bottom:4px;" id="gradingAssessmentTitle"></div>
+        <div style="font-size:13px;color:var(--text-muted);margin-bottom:20px;" id="gradingAssessmentMeta"></div>
+        <div id="submissionsList"></div>
+        <div style="margin-top:20px;">
+          <a onclick="switchSection('grading')" style="font-size:14px;color:#888;cursor:pointer;" data-i18n="td.grade2.back">← Back to Assessments</a>
+        </div>
+      </section>
+
+      <!-- ═══ GRADING — Step 3 ═══ -->
+      <section id="section-grading-single" class="page-section hidden">
+        <div style="font-size:20px;font-weight:600;color:var(--text-dark);margin-bottom:4px;" id="gradingSingleTitle"></div>
+        <div style="font-size:13px;color:var(--text-muted);margin-bottom:20px;" id="gradingSingleMeta"></div>
+        <div id="gradingSingleBody"></div>
+        <button class="btn-publish" id="submitGradeBtn" onclick="submitCurrentGrade()" style="max-width:300px;margin-top:8px;" data-i18n="td.grade3.submit">Submit Grade</button>
+        <div style="margin-top:16px;">
+          <a id="backToSubmissionsLink" style="font-size:14px;color:#888;cursor:pointer;" data-i18n="td.grade3.back">← Back to Submissions</a>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<!-- Edit Lesson Modal -->
+<div class="modal-overlay" id="editLessonModal">
+  <div class="modal-box">
+    <div class="modal-title" data-i18n="td.modal.edittitle">Edit Lesson</div>
+    <input type="hidden" id="editLessonId"/>
+    <div class="create-field">
+      <label class="create-label" data-i18n="td.modal.editlesnm">Lesson Name:</label>
+      <input class="create-input" id="editLessonName"/>
+    </div>
+    <div class="create-field">
+      <label class="create-label" data-i18n="td.modal.filetype">File Type:</label>
+      <div class="file-type-grid" id="editModalFileTypeGrid">
+        <button class="file-type-btn selected" data-type="video"    onclick="selectEditFileType(this)"><i class="fa-solid fa-film"></i>Video</button>
+        <button class="file-type-btn"          data-type="pdf"      onclick="selectEditFileType(this)"><i class="fa-solid fa-file-pdf"></i>PDF</button>
+        <button class="file-type-btn"          data-type="slides"   onclick="selectEditFileType(this)"><i class="fa-solid fa-display"></i>Slides</button>
+        <button class="file-type-btn"          data-type="document" onclick="selectEditFileType(this)"><i class="fa-solid fa-file-word"></i>Doc</button>
+        <button class="file-type-btn"          data-type="image"    onclick="selectEditFileType(this)"><i class="fa-solid fa-image"></i>Image</button>
+      </div>
+      <input type="hidden" id="editLessonFileType" value="video"/>
+    </div>
+    <div class="create-field">
+      <label class="create-label" data-i18n="td.modal.replace">Replace File (optional):</label>
+      <div class="modal-upload-zone" onclick="document.getElementById('editLessonFileInput').click()">
+        <i class="fa-solid fa-cloud-arrow-up"></i>
+        <span>Click to upload new file</span>
+        <input type="file" id="editLessonFileInput" style="display:none" onchange="document.getElementById('editLessonFileName').textContent='✓ '+this.files[0].name"/>
+      </div>
+      <div id="editLessonFileName" style="font-size:12px;color:var(--brand);margin-bottom:8px;"></div>
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px;" data-i18n="td.modal.urlhint">— or update URL instead —</div>
+      <input class="create-input" id="editLessonFileUrl" placeholder="https://..."/>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-enroll" style="background:#fff;color:var(--text-dark);border:1.5px solid var(--border);" onclick="closeModal('editLessonModal')" data-i18n="td.modal.cancel">Cancel</button>
+      <button class="btn-enroll" onclick="submitEditLesson()" data-i18n="td.modal.save">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- Lesson Preview Modal -->
+<div class="modal-overlay" id="lessonPreviewModal">
+  <div class="modal-box" style="max-width:780px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+      <div class="modal-title" id="lessonPreviewTitle" style="margin-bottom:0;"></div>
+      <button class="btn-icon" onclick="closeModal('lessonPreviewModal')" style="font-size:18px;"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div style="font-size:13px;color:var(--text-muted);margin-bottom:16px;" id="lessonPreviewType"></div>
+    <div id="lessonPreviewContent"></div>
+  </div>
+</div>
+
+<!-- Add Module Modal -->
+<div class="modal-overlay" id="addModuleModal">
+  <div class="modal-box">
+    <div class="modal-title" data-i18n="td.modal.modtitle">Add Module</div>
+    <div class="create-field">
+      <label class="create-label" data-i18n="td.modal.modname">Module Name:</label>
+      <input class="create-input" id="newModuleName" data-i18n-placeholder="td.modal.modname" placeholder="Module Name"/>
+    </div>
+    <div class="create-field">
+      <label class="create-label" data-i18n="td.modal.moddesc">Description (optional):</label>
+      <textarea class="create-textarea" id="newModuleDesc"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-enroll" style="background:#fff;color:var(--text-dark);border:1.5px solid var(--border);" onclick="closeModal('addModuleModal')" data-i18n="td.modal.cancel">Cancel</button>
+      <button class="btn-enroll" onclick="submitAddModule()" data-i18n="td.modal.addmod">Add Module</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Lesson Modal -->
+<div class="modal-overlay" id="addLessonModal">
+  <div class="modal-box">
+    <div class="modal-title" data-i18n="td.modal.lestitle">Add Lesson</div>
+    <input type="hidden" id="addLessonModuleId"/>
+    <div class="create-field">
+      <label class="create-label" data-i18n="td.modal.lesname">Lesson Name:</label>
+      <input class="create-input" id="newLessonName" data-i18n-placeholder="td.modal.lesname" placeholder="Lesson Name"/>
+    </div>
+    <div class="create-field">
+      <label class="create-label" data-i18n="td.modal.filetype">File Type:</label>
+      <div class="file-type-grid" id="modalFileTypeGrid">
+        <button class="file-type-btn selected" data-type="video"    onclick="selectFileType(this,'modal')"><i class="fa-solid fa-film"></i>Video</button>
+        <button class="file-type-btn"          data-type="pdf"      onclick="selectFileType(this,'modal')"><i class="fa-solid fa-file-pdf"></i>PDF</button>
+        <button class="file-type-btn"          data-type="slides"   onclick="selectFileType(this,'modal')"><i class="fa-solid fa-display"></i>Slides</button>
+        <button class="file-type-btn"          data-type="document" onclick="selectFileType(this,'modal')"><i class="fa-solid fa-file-word"></i>Doc</button>
+        <button class="file-type-btn"          data-type="image"    onclick="selectFileType(this,'modal')"><i class="fa-solid fa-image"></i>Image</button>
+      </div>
+      <input type="hidden" id="newLessonFileType" value="video"/>
+    </div>
+    <div class="create-field">
+      <label class="create-label" data-i18n="td.modal.upload">Upload File:</label>
+      <div class="modal-upload-zone" onclick="document.getElementById('modalFileInput').click()">
+        <i class="fa-solid fa-cloud-arrow-up"></i>
+        <span id="modalUploadHint">Click or drag to upload</span>
+        <input type="file" id="modalFileInput" style="display:none" onchange="handleFileSelect(this,'modalFileName')"/>
+      </div>
+      <div id="modalFileName" style="font-size:12px;color:var(--brand);margin-bottom:8px;"></div>
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px;" data-i18n="td.modal.url">— or paste a URL instead —</div>
+      <input class="create-input" id="newLessonFileUrl" placeholder="https://..."/>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-enroll" style="background:#fff;color:var(--text-dark);border:1.5px solid var(--border);" onclick="closeModal('addLessonModal')" data-i18n="td.modal.cancel">Cancel</button>
+      <button class="btn-enroll" onclick="submitAddLesson()" data-i18n="td.modal.addlesson">Add Lesson</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Modal -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal-box">
+    <div class="modal-title" id="deleteModalTitle"></div>
+    <p style="font-size:14px;color:var(--text-mid);" id="deleteModalMsg"></p>
+    <div class="modal-actions">
+      <button class="btn-enroll" style="background:#fff;color:var(--text-dark);border:1.5px solid var(--border);" onclick="closeModal('deleteModal')" data-i18n="td.modal.cancel2">Cancel</button>
+      <button class="btn-enroll" style="background:#dc2626;" id="confirmDeleteBtn" data-i18n="td.courses.delete">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Submission Review Modal -->
+<div class="modal-overlay" id="submissionReviewModal">
+  <div class="modal-box" style="max-width:720px;">
+    <div class="modal-title" id="reviewModalTitle"></div>
+    <div id="reviewModalMeta" style="font-size:13px;color:var(--text-muted);margin-bottom:20px;"></div>
+    <div id="reviewModalBody"></div>
+    <div class="modal-actions">
+      <button class="btn-enroll" onclick="closeModal('submissionReviewModal')" data-i18n="td.modal.review.close">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Profile Update Modal (REQ-6) -->
+<div class="modal-overlay" id="profileModal">
+  <div class="modal-box" style="max-width:480px;">
+    <div class="modal-title">Edit Profile</div>
+    <div class="create-field">
+      <label class="create-label">Full Name:</label>
+      <input class="create-input" id="profileName" placeholder="Full Names"/>
+    </div>
+    <div class="create-field">
+      <label class="create-label">Department (optional):</label>
+      <input class="create-input" id="profileDept" placeholder="e.g. Mathematics"/>
+    </div>
+    <div class="create-section-title" style="margin-top:16px;">Change Password (optional)</div>
+    <div class="create-field">
+      <label class="create-label">Current Password:</label>
+      <input class="create-input" type="password" id="profileCurrentPass" placeholder="Current password"/>
+    </div>
+    <div class="create-field">
+      <label class="create-label">New Password:</label>
+      <input class="create-input" type="password" id="profileNewPass" placeholder="New password"/>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-enroll" style="background:#fff;color:var(--text-dark);border:1.5px solid var(--border);" onclick="closeModal('profileModal')">Cancel</button>
+      <button class="btn-enroll" onclick="saveProfile()">Save Profile</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/i18n.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/components.js"></script>
+<script>
+  if (!requireAuth('teacher')) {}
+
+  const FILE_ICONS  = { video:'fa-film', pdf:'fa-file-pdf', slides:'fa-display', document:'fa-file-word', image:'fa-image' };
+  const FILE_LABELS = { video:'Video', pdf:'PDF', slides:'Slides', document:'Document', image:'Image' };
+  const FILE_ACCEPT = { video:'video/*', pdf:'.pdf', slides:'.ppt,.pptx,.odp', document:'.doc,.docx,.odt', image:'image/*' };
+
+  let teacherCourses     = [];
+  let questionCount      = 0;
+  let currentGradingData = null;
+  let pendingByAssessment = {};
+
+  // ── Init ──────────────────────────────────────────────────────
+  (function init() {
+    const user = Auth.getUser();
+    if (!user) return;
+    const initials = user.full_name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+    document.getElementById('topbarAvatar').textContent = initials;
+    document.getElementById('topbarName').textContent   = user.full_name;
+    document.getElementById('topbarRole').textContent   = t(`role.${user.role}`) || user.role;
+    // Update role label when language switches
+    document.addEventListener('iga-lang-changed', () => {
+      document.getElementById('topbarRole').textContent = t(`role.${user.role}`) || user.role;
+      document.querySelector('.topbar-logout')?.setAttribute('title', t('topbar.logout'));
+    });
+    document.querySelector('.topbar-logout')?.setAttribute('title', t('topbar.logout'));
+    updateSidebarLang();
+    document.addEventListener('iga-lang-changed', () => { updateSidebarLang(); applyLang(); renderDynamic(); });
+    loadCourses(); loadStudents(); loadAssessments(); loadPendingGrades();
+  })();
+
+  function updateSidebarLang() {
+    const el = document.getElementById('sidebarLangLabel');
+    if (el) el.textContent = t('sidebar.switchlang');
+  }
+
+  // Re-render any dynamic content that uses t()
+  function renderDynamic() {
+    renderCourses();
+    loadStudents();
+    loadAssessments();
+    loadPendingGrades();
+  }
+
+  // ── Section switching ─────────────────────────────────────────
+  const SECTION_TITLES = {
+    'courses':             ['', 'td.courses.title'],
+    'create-course':       ['td.nav.courses', 'td.form.course.title'],
+    'performance':         ['', 'td.perf.title'],
+    'assessments':         ['', 'td.assess.title'],
+    'create-assessment':   ['td.nav.assessments', 'td.aform.title'],
+    'grading':             ['', 'td.grade.title'],
+    'grading-submissions': ['td.grade.title', ''],
+    'grading-single':      ['td.grade.title', ''],
+  };
+  function switchSection(key, btn) {
+    document.querySelectorAll('.page-section').forEach(s => s.classList.add('hidden'));
+    document.getElementById(`section-${key}`).classList.remove('hidden');
+    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+    const nb = document.querySelector(`[data-key="${key.split('-')[0]}"]`);
+    if (btn) btn.classList.add('active'); else if (nb) nb.classList.add('active');
+    const [bc, h] = SECTION_TITLES[key] || ['',''];
+    document.getElementById('topbarBreadcrumb').textContent = bc ? t(bc) : '';
+    if (h) document.getElementById('topbarHeading').textContent = t(h);
+    if (key === 'create-assessment') populateCourseDropdown();
+  }
+
+  // ── File type ─────────────────────────────────────────────────
+  function selectFileType(btn, ctx) {
+    const gridId = ctx==='modal' ? 'modalFileTypeGrid' : 'mainFileTypeGrid';
+    document.querySelectorAll(`#${gridId} .file-type-btn`).forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    const type = btn.dataset.type;
+    if (ctx==='modal') {
+      document.getElementById('newLessonFileType').value = type;
+      document.getElementById('modalFileInput').accept   = FILE_ACCEPT[type];
+    } else {
+      document.getElementById('selectedFileType').value = type;
+      document.getElementById('fileInput').accept       = FILE_ACCEPT[type];
+    }
+  }
+  function selectEditFileType(btn) {
+    document.querySelectorAll('#editModalFileTypeGrid .file-type-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    document.getElementById('editLessonFileType').value = btn.dataset.type;
+    document.getElementById('editLessonFileInput').accept = FILE_ACCEPT[btn.dataset.type]||'*';
+  }
+  function handleFileSelect(input, displayId) {
+    if (input.files[0]) document.getElementById(displayId).textContent = `✓ ${input.files[0].name}`;
+  }
+
+  // ── Courses ───────────────────────────────────────────────────
+  async function loadCourses() {
+    const res = await CourseAPI.list();
+    document.getElementById('coursesLoading').style.display = 'none';
+    if (!res.ok) { showToast(t('err.load.course'), 'error'); return; }
+    teacherCourses = res.data.data || [];
+    renderCourses();
+  }
+
+  function renderCourses() {
+    const grid = document.getElementById('coursesGrid');
+    if (!teacherCourses.length) {
+      grid.innerHTML = `<div style="color:var(--text-muted);font-size:14px;">${t('td.courses.empty')}</div>`;
+      return;
+    }
+    grid.innerHTML = teacherCourses.map((c,i) => `
+      <div class="course-card">
+        <div class="course-thumb"><i class="fa-regular fa-newspaper"></i></div>
+        <div class="course-body">
+          <div class="course-num">${String(i+1).padStart(2,'0')}</div>
+          <div class="course-name">${c.title}</div>
+          <div class="course-modules">${String(c.module_count).padStart(2,'0')} ${t('td.courses.modules')}</div>
+          <div style="margin-top:6px;">
+            <span class="badge ${c.is_published?'badge-published':'badge-draft'}">
+              ${c.is_published ? t('td.courses.published') : t('td.courses.draft')}
+            </span>
+          </div>
+          <div class="card-actions">
+            <button class="btn-card-action btn-edit" onclick="editCourse(${c.id})">
+              <i class="fa-solid fa-pen"></i> ${t('td.courses.edit')}
+            </button>
+            <button class="btn-card-action btn-delete" onclick="confirmDeleteItem('course',${c.id})">
+              <i class="fa-solid fa-trash"></i> ${t('td.courses.delete')}
+            </button>
+          </div>
+        </div>
+      </div>`).join('');
+  }
+
+  function openCreateCourse() {
+    document.getElementById('editCourseId').value = '';
+    document.getElementById('courseFormTitle').textContent = t('td.form.course.title');
+    document.getElementById('publishBtn').textContent = t('td.form.course.publish');
+    document.getElementById('firstModuleSection').style.display = '';
+    document.getElementById('modulesManager').classList.add('hidden');
+    ['courseTitle','courseDesc','guidelines','moduleName','moduleDesc','lessonName','lessonFileUrl']
+      .forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+    document.getElementById('publishNow').checked = false;
+    document.getElementById('fileName').textContent = '';
+    switchSection('create-course');
+  }
+
+  async function editCourse(id) {
+    const res = await CourseAPI.get(id);
+    if (!res.ok) { showToast(t('err.load.course'), 'error'); return; }
+    const c = res.data.data;
+    document.getElementById('editCourseId').value = id;
+    document.getElementById('courseFormTitle').textContent = t('td.form.course.edit');
+    document.getElementById('publishBtn').textContent = t('td.form.course.save');
+    document.getElementById('courseTitle').value  = c.title       || '';
+    document.getElementById('courseDesc').value   = c.description || '';
+    document.getElementById('guidelines').value   = c.guidelines  || '';
+    document.getElementById('publishNow').checked = c.is_published || false;
+    document.getElementById('firstModuleSection').style.display = 'none';
+    document.getElementById('modulesManager').classList.remove('hidden');
+    renderModulesManager(c.modules||[], id);
+    switchSection('create-course');
+  }
+
+  function renderModulesManager(modules, courseId) {
+    const container = document.getElementById('modulesContainer');
+    if (!modules.length) {
+      container.innerHTML = `<div style="color:var(--text-muted);font-size:14px;">${t('td.modules.empty')}</div>`;
+      return;
+    }
+    container.innerHTML = modules.map(m => `
+      <div class="module-block">
+        <div class="module-header">
+          <span class="module-title-text"><i class="fa-solid fa-book-open" style="color:var(--brand);margin-right:8px;"></i>${m.title}</span>
+          <div style="display:flex;gap:6px;">
+            <button class="btn-icon" onclick="showAddLessonModal(${m.id})" title="${t('td.modules.add')}"><i class="fa-solid fa-plus"></i></button>
+            <button class="btn-icon danger" onclick="confirmDeleteItem('module',${m.id})"><i class="fa-solid fa-trash"></i></button>
+          </div>
+        </div>
+        ${(m.lessons||[]).map(l => `
+          <div class="lesson-row">
+            <div class="lesson-info">
+              <div class="lesson-icon-sm"><i class="fa-solid ${FILE_ICONS[l.file_type]||'fa-file'}"></i></div>
+              <div>
+                <div class="lesson-name-sm">${l.title}</div>
+                <div class="lesson-type-sm">
+                  ${FILE_LABELS[l.file_type]||'File'}
+                  ${l.file_url
+                    ? `<span style="color:#16a34a;margin-left:4px;"><i class="fa-solid fa-circle-check" style="font-size:10px;"></i> ${t('td.modules.uploaded')}</span>`
+                    : `<span style="color:#dc2626;margin-left:4px;"><i class="fa-solid fa-circle-xmark" style="font-size:10px;"></i> ${t('td.modules.nofile')}</span>`}
+                </div>
+              </div>
+            </div>
+            <div style="display:flex;gap:6px;">
+              ${l.file_url ? `<button class="btn-icon" onclick='viewLessonPreview(${JSON.stringify(l).replace(/'/g,"&#39;")})' title="Preview"><i class="fa-solid fa-eye"></i></button>` : ''}
+              <button class="btn-icon" onclick='showEditLessonModal(${JSON.stringify(l).replace(/'/g,"&#39;")})' title="${t('td.courses.edit')}"><i class="fa-solid fa-pen"></i></button>
+              <button class="btn-icon danger" onclick="confirmDeleteItem('lesson',${l.id})"><i class="fa-solid fa-trash"></i></button>
+            </div>
+          </div>`).join('')}
+        ${!(m.lessons||[]).length ? `<div style="padding:10px 16px;font-size:13px;color:var(--text-muted);">${t('td.modules.noles')}</div>` : ''}
+      </div>`).join('');
+  }
+
+  async function saveCourse() {
+    const title  = document.getElementById('courseTitle').value.trim();
+    const editId = document.getElementById('editCourseId').value;
+    const isEdit = !!editId;
+    if (!title) { showToast(t('err.course.title'), 'error'); return; }
+    if (!isEdit) {
+      if (!document.getElementById('moduleName').value.trim()) { showToast(t('err.module.name'), 'error'); return; }
+      if (!document.getElementById('lessonName').value.trim()) { showToast(t('err.lesson.name'), 'error'); return; }
+    }
+    const btn = document.getElementById('publishBtn');
+    setLoading(btn, true);
+    const payload = {
+      title, description: document.getElementById('courseDesc').value.trim(),
+      guidelines: document.getElementById('guidelines').value.trim(),
+      is_published: document.getElementById('publishNow').checked,
+    };
+    if (!isEdit) {
+      payload.module_title       = document.getElementById('moduleName').value.trim();
+      payload.module_description = document.getElementById('moduleDesc').value.trim();
+      payload.lesson_title       = document.getElementById('lessonName').value.trim();
+      payload.file_type          = document.getElementById('selectedFileType').value;
+      payload.file_url           = document.getElementById('lessonFileUrl').value.trim() || null;
+    }
+    const res = isEdit ? await CourseAPI.update(editId, payload) : await CourseAPI.create(payload);
+    setLoading(btn, false);
+    if (res.ok) {
+      showToast(isEdit ? t('toast.course.updated') : t('toast.course.saved'), 'success');
+      await loadCourses();
+      setTimeout(() => switchSection('courses'), 800);
+    } else {
+      showToast(res.data.message || t('err.course.title'), 'error');
+    }
+  }
+
+  // ── Module/Lesson modals ──────────────────────────────────────
+  function showAddModuleModal() {
+    document.getElementById('newModuleName').value = '';
+    document.getElementById('newModuleDesc').value = '';
+    document.getElementById('addModuleModal').classList.add('open');
+  }
+
+  async function submitAddModule() {
+    const courseId = document.getElementById('editCourseId').value;
+    const title    = document.getElementById('newModuleName').value.trim();
+    if (!title) { showToast(t('err.module.name'), 'error'); return; }
+    const res = await CourseAPI.addModule(courseId, { title, description: document.getElementById('newModuleDesc').value.trim() });
+    closeModal('addModuleModal');
+    if (res.ok) {
+      showToast(t('toast.module.added'), 'success');
+      const cr = await CourseAPI.get(courseId);
+      if (cr.ok) renderModulesManager(cr.data.data.modules||[], courseId);
+    } else { showToast(res.data.message || t('err.module.name'), 'error'); }
+  }
+
+  function showAddLessonModal(moduleId) {
+    document.getElementById('addLessonModuleId').value = moduleId;
+    document.getElementById('newLessonName').value     = '';
+    document.getElementById('newLessonFileUrl').value  = '';
+    document.getElementById('newLessonFileType').value = 'video';
+    document.getElementById('modalFileName').textContent = '';
+    document.querySelectorAll('#modalFileTypeGrid .file-type-btn').forEach((b,i) => b.classList.toggle('selected', i===0));
+    document.getElementById('addLessonModal').classList.add('open');
+  }
+
+  async function submitAddLesson() {
+    const moduleId = document.getElementById('addLessonModuleId').value;
+    const title    = document.getElementById('newLessonName').value.trim();
+    if (!title) { showToast(t('err.lesson.name'), 'error'); return; }
+    const file    = document.getElementById('modalFileInput').files[0] || null;
+    const fileUrl = document.getElementById('newLessonFileUrl').value.trim() || null;
+    if (!file && !fileUrl) { showToast(t('err.lesson.file'), 'error'); return; }
+    const res = await CourseAPI.addLesson(moduleId, { title, file_type: document.getElementById('newLessonFileType').value, file_url: fileUrl }, file);
+    closeModal('addLessonModal');
+    if (res.ok) {
+      showToast(t('toast.lesson.added'), 'success');
+      const courseId = document.getElementById('editCourseId').value;
+      const cr = await CourseAPI.get(courseId);
+      if (cr.ok) renderModulesManager(cr.data.data.modules||[], courseId);
+    } else { showToast(res.data.message || t('err.lesson.name'), 'error'); }
+  }
+
+  let editingLesson = null;
+  function showEditLessonModal(lesson) {
+    editingLesson = lesson;
+    document.getElementById('editLessonId').value      = lesson.id;
+    document.getElementById('editLessonName').value    = lesson.title || '';
+    document.getElementById('editLessonFileUrl').value = lesson.file_url && !lesson.file_url.startsWith('/courses/uploads') ? lesson.file_url : '';
+    document.getElementById('editLessonFileName').textContent = lesson.file_url ? `✓ ${t('td.modules.uploaded')}` : '';
+    document.getElementById('editLessonFileType').value = lesson.file_type || 'video';
+    const ft = lesson.file_type || 'video';
+    document.querySelectorAll('#editModalFileTypeGrid .file-type-btn').forEach(b => b.classList.toggle('selected', b.dataset.type===ft));
+    document.getElementById('editLessonModal').classList.add('open');
+  }
+
+  async function submitEditLesson() {
+    const lessonId = document.getElementById('editLessonId').value;
+    const title    = document.getElementById('editLessonName').value.trim();
+    if (!title) { showToast(t('err.lesson.name'), 'error'); return; }
+    const file    = document.getElementById('editLessonFileInput').files[0] || null;
+    const fileUrl = document.getElementById('editLessonFileUrl').value.trim() || null;
+    const fileType = document.getElementById('editLessonFileType').value;
+    const res = await CourseAPI.updateLesson(lessonId, { title, file_type: fileType, file_url: fileUrl }, file);
+    closeModal('editLessonModal');
+    if (res.ok) {
+      showToast(t('toast.lesson.updated'), 'success');
+      const courseId = document.getElementById('editCourseId').value;
+      const cr = await CourseAPI.get(courseId);
+      if (cr.ok) renderModulesManager(cr.data.data.modules||[], courseId);
+    } else { showToast(res.data.message || t('err.lesson.name'), 'error'); }
+  }
+
+  function resolveFileUrl(url) {
+    if (!url) return null;
+    if (url.startsWith('/courses/uploads')) return `http://127.0.0.1:5000${url}`;
+    return url;
+  }
+
+  function viewLessonPreview(lesson) {
+    document.getElementById('lessonPreviewTitle').textContent = lesson.title;
+    document.getElementById('lessonPreviewType').textContent  = FILE_LABELS[lesson.file_type]||'File';
+    const fileUrl = resolveFileUrl(lesson.file_url);
+    const content = document.getElementById('lessonPreviewContent');
+    if (!fileUrl) {
+      content.innerHTML = `<div style="color:var(--text-muted);font-size:14px;padding:32px;text-align:center;border:1px dashed var(--border);border-radius:8px;">${t('sd.lessons.nofile')}</div>`;
+    } else if (lesson.file_type==='video') {
+      content.innerHTML = `<video controls style="width:100%;max-width:720px;border-radius:8px;"><source src="${fileUrl}" type="video/mp4"/><source src="${fileUrl}"/></video>`;
+    } else if (lesson.file_type==='image') {
+      content.innerHTML = `<img src="${fileUrl}" style="max-width:100%;border-radius:8px;" alt="${lesson.title}"/>`;
+    } else if (lesson.file_type==='pdf') {
+      content.innerHTML = `<object data="${fileUrl}" type="application/pdf" style="width:100%;height:500px;border-radius:8px;border:1px solid var(--border);"><div style="padding:24px;text-align:center;"><a href="${fileUrl}" target="_blank" class="btn-enroll" style="width:auto;padding:0 20px;display:inline-flex;text-decoration:none;"><i class="fa-solid fa-arrow-up-right-from-square" style="margin-right:8px;"></i>${t('sd.lessons.openpdf')}</a></div></object>`;
+    } else {
+      content.innerHTML = `<div style="padding:24px;text-align:center;"><i class="fa-solid ${FILE_ICONS[lesson.file_type]||'fa-file'}" style="font-size:48px;color:var(--brand);margin-bottom:12px;display:block;"></i><div style="font-size:15px;font-weight:600;color:var(--text-dark);margin-bottom:12px;">${lesson.title}</div><a href="${fileUrl}" target="_blank" class="btn-enroll" style="width:auto;padding:0 20px;display:inline-flex;text-decoration:none;"><i class="fa-solid fa-download" style="margin-right:8px;"></i>${t('sd.lessons.open')}</a></div>`;
+    }
+    document.getElementById('lessonPreviewModal').classList.add('open');
+  }
+
+  // ── Delete ────────────────────────────────────────────────────
+  function confirmDeleteItem(type, id) {
+    const titleMap = { course: t('td.courses.delete')+' '+t('td.nav.courses'), module: t('td.courses.delete')+' Module', lesson: t('td.courses.delete')+' Lesson' };
+    document.getElementById('deleteModalTitle').textContent = titleMap[type] || 'Delete';
+    document.getElementById('deleteModalMsg').textContent   = type==='course' ? 'This will delete the course and all its content.' : type==='module' ? 'This will delete the module and all its lessons.' : 'Delete this lesson?';
+    document.getElementById('deleteModal').classList.add('open');
+    document.getElementById('confirmDeleteBtn').onclick = async () => {
+      let res;
+      if (type==='course') res = await CourseAPI.delete(id);
+      if (type==='module') res = await CourseAPI.deleteModule(id);
+      if (type==='lesson') res = await CourseAPI.deleteLesson(id);
+      closeModal('deleteModal');
+      if (res.ok) {
+        showToast(t('toast.delete.done'), 'success');
+        if (type==='course') { await loadCourses(); switchSection('courses'); }
+        else {
+          const courseId = document.getElementById('editCourseId').value;
+          const cr = await CourseAPI.get(courseId);
+          if (cr.ok) renderModulesManager(cr.data.data.modules||[], courseId);
+          await loadCourses();
+        }
+      } else { showToast(t('toast.delete.fail'), 'error'); }
+    };
+  }
+
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+  // ── Profile (REQ-6) ───────────────────────────────────────────
+  async function openProfileModal() {
+    const user = Auth.getUser();
+    document.getElementById('profileName').value        = user?.full_name || '';
+    document.getElementById('profileDept').value        = '';
+    document.getElementById('profileCurrentPass').value = '';
+    document.getElementById('profileNewPass').value     = '';
+    // Open immediately — don't wait for API
+    document.getElementById('profileModal').classList.add('open');
+    // Then try to load department in background
+    try {
+      const res = await AuthAPI.getMe();
+      if (res.ok && res.data.data?.profile?.department) {
+        document.getElementById('profileDept').value = res.data.data.profile.department || '';
+      }
+    } catch(_) {}
+  }
+
+  async function saveProfile() {
+    const payload = {};
+    const name    = document.getElementById('profileName').value.trim();
+    const dept    = document.getElementById('profileDept').value.trim();
+    const curPass = document.getElementById('profileCurrentPass').value;
+    const newPass = document.getElementById('profileNewPass').value;
+
+    if (name) payload.full_name = name;
+    if (dept) payload.department = dept;
+    if (newPass) {
+      if (!curPass) { showToast('Enter your current password to change it.', 'error'); return; }
+      payload.current_password = curPass;
+      payload.new_password     = newPass;
+    }
+
+    const res = await AuthAPI.updateMe(payload);
+    if (res.ok) {
+      showToast('Profile updated!', 'success');
+      // Update stored user
+      const user = Auth.getUser();
+      if (name) user.full_name = name;
+      localStorage.setItem('iga_user', JSON.stringify(user));
+      document.getElementById('topbarName').textContent = name || user.full_name;
+      const initials = (name||user.full_name).split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+      document.getElementById('topbarAvatar').textContent = initials;
+      closeModal('profileModal');
+    } else {
+      showToast(res.data.message || 'Failed to update profile.', 'error');
+    }
+  }
+  async function loadStudents() {
+    const res = await GradeAPI.studentPerformance();
+    if (!res.ok) return;
+    const students = res.data.data || [];
+    const body     = document.getElementById('studentsBody');
+    if (!students.length) {
+      body.innerHTML = `<div style="color:var(--text-muted);font-size:14px;padding:16px 0;">${t('td.perf.empty')}</div>`;
+      return;
+    }
+    window._studentPerf = students;
+    body.innerHTML = students.map((s,i) => `
+      <div class="perf-row-data">
+        <div>${s.student_name}</div>
+        <div>${s.course_title}</div>
+        <div class="${s.status==='graded'?'perf-graded':'perf-ungraded'}">
+          ${s.status==='not_started' ? t('td.perf.notstarted') : s.status==='graded' ? t('td.perf.graded') : s.status==='pending_review' ? t('td.perf.pending') : t('td.perf.submitted')}
+        </div>
+        <div>${s.percentage!==null ? s.percentage+'%' : '—'}</div>
+        <div style="font-size:12px;color:var(--text-muted);">${s.enrolled_at ? s.enrolled_at.slice(0,10) : '—'}</div>
+        <div>${s.status!=='not_started' ? `<button class="btn-card-action btn-edit" style="width:auto;padding:0 10px;" onclick="viewStudentSubmission(${i})"><i class="fa-solid fa-eye"></i></button>` : '—'}</div>
+      </div>`).join('');
+  }
+
+  async function viewStudentSubmission(index) {
+    const s = (window._studentPerf||[])[index];
+    if (!s || s.status==='not_started') return;
+    const res = await apiFetch(`/courses/teacher/students-submissions?student_id=${s.student_id}&course_id=${s.course_id}`);
+    document.getElementById('reviewModalTitle').textContent = `${s.student_name} — ${s.course_title}`;
+    if (!res.ok || !res.data.data?.length) {
+      document.getElementById('reviewModalMeta').textContent = '';
+      document.getElementById('reviewModalBody').innerHTML   = `<div style="color:var(--text-muted);font-size:14px;">${t('td.modal.review.none')}</div>`;
+      document.getElementById('submissionReviewModal').classList.add('open');
+      return;
+    }
+    const submissions = res.data.data;
+    document.getElementById('reviewModalMeta').textContent = `${submissions.length} assessment${submissions.length!==1?'s':''} · ${s.percentage!==null?s.percentage+'%':'—'}`;
+    document.getElementById('reviewModalBody').innerHTML = submissions.map(sub => `
+      <div style="margin-bottom:24px;">
+        <div style="font-size:15px;font-weight:700;color:var(--text-dark);margin-bottom:4px;">${sub.assessment_title}</div>
+        <div style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">${sub.score}/${sub.max_score} (${sub.percentage}%) · ${sub.status==='graded'?t('td.perf.graded'):t('td.perf.pending')}</div>
+        ${(sub.review||[]).map(q => {
+          const sAns = Array.isArray(q.student_answer) ? q.student_answer.join(', ') : (q.student_answer||'—');
+          const cAns = Array.isArray(q.correct_answer) ? q.correct_answer.join(', ') : (q.correct_answer||'');
+          const icon = q.is_correct===true ? '<i class="fa-solid fa-circle-check" style="color:#16a34a;margin-right:6px;"></i>' : q.is_correct===false ? '<i class="fa-solid fa-circle-xmark" style="color:#dc2626;margin-right:6px;"></i>' : '<i class="fa-solid fa-hourglass-half" style="color:#d97706;margin-right:6px;"></i>';
+          return `<div style="padding:10px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;background:${q.is_correct===true?'#f0fdf4':q.is_correct===false?'#fef2f2':'#fffbeb'};">
+            <div style="font-size:13px;font-weight:600;color:var(--text-dark);margin-bottom:4px;">${icon}${q.question_text}</div>
+            <div style="font-size:12px;color:var(--text-mid);">${t('td.modal.review.student')} <strong>${sAns}</strong></div>
+            ${q.question_type!=='short_answer'&&cAns?`<div style="font-size:12px;color:var(--text-mid);">${t('td.modal.review.correct')} <strong>${cAns}</strong></div>`:''}
+            <div style="font-size:12px;color:var(--text-muted);">${t('td.modal.review.points')} ${q.points_earned!==undefined?q.points_earned:(q.is_correct?q.points:0)}/${q.points}</div>
+            ${q.teacher_comment?`<div style="font-size:12px;color:#7c3aed;font-style:italic;">${t('td.modal.review.comment')} ${q.teacher_comment}</div>`:''}
+          </div>`;
+        }).join('')}
+      </div>`).join('<hr style="border:none;border-top:1px solid var(--border);margin:16px 0;"/>');
+    document.getElementById('submissionReviewModal').classList.add('open');
+  }
+
+  async function exportReport() {
+    const btn = document.getElementById('exportBtn');
+    setLoading(btn, true);
+    showToast(t('toast.pdf.gen'), 'info');
+    await GradeAPI.exportPDF();
+    setLoading(btn, false);
+  }
+
+  // ── Assessments ───────────────────────────────────────────────
+  async function loadAssessments() {
+    const res = await AssessmentAPI.listAll();
+    document.getElementById('assessmentsLoading').style.display = 'none';
+    if (!res.ok) return;
+    const assessments = res.data.data || [];
+    const grid = document.getElementById('quizGrid');
+    if (!assessments.length) {
+      grid.innerHTML = `<div style="color:var(--text-muted);font-size:14px;">${t('td.assess.empty')}</div>`;
+      return;
+    }
+    const pendingRes = await GradeAPI.pendingGrades();
+    const pendingIds = new Set((pendingRes.data.data||[]).map(s => s.assessment_id));
+    grid.innerHTML = assessments.map(a => {
+      const isLocked = a.is_published && !pendingIds.has(a.id) && a.question_count > 0;
+      return `<div class="quiz-card">
+        <div class="quiz-folder"><i class="fa-solid fa-folder-open"></i></div>
+        <div class="quiz-label-text">${a.course_title||''}</div>
+        <div class="quiz-name">${a.title}</div>
+        <div class="quiz-questions">${a.question_count} ${t('td.assess.questions')}</div>
+        <div style="margin-top:6px;">
+          <span class="badge ${a.is_published?'badge-published':'badge-draft'}">${a.is_published?t('td.courses.published'):t('td.courses.draft')}</span>
+          ${isLocked ? `<span class="badge" style="background:#f0f7ff;color:#2563EB;margin-left:4px;"><i class="fa-solid fa-lock" style="margin-right:3px;"></i>${t('td.assess.locked')}</span>` : ''}
+        </div>
+        <div class="card-actions">
+          ${isLocked
+            ? `<button class="btn-card-action" style="flex:1;border:1.5px solid var(--border);color:var(--text-muted);background:#f8fafc;cursor:not-allowed;"><i class="fa-solid fa-lock"></i> ${t('td.assess.locked')}</button>`
+            : `<button class="btn-card-action btn-edit" onclick="editAssessment(${a.id})"><i class="fa-solid fa-pen"></i> ${t('td.assess.edit')}</button>`}
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function openCreateAssessment() {
+    document.getElementById('editAssessmentId').value = '';
+    document.getElementById('assessmentFormTitle').textContent = t('td.aform.title');
+    document.getElementById('saveAssessmentBtn').textContent   = t('td.aform.save');
+    ['aTitle','aDesc','aTimeLimit'].forEach(id => document.getElementById(id).value='');
+    document.getElementById('aMaxAttempts').value = '1';
+    document.getElementById('aPublish').checked   = false;
+    document.getElementById('questionsContainer').innerHTML = '';
+    questionCount = 0;
+    switchSection('create-assessment');
+  }
+
+  async function editAssessment(id) {
+    const res = await AssessmentAPI.get(id);
+    if (!res.ok) { showToast(t('err.load.assess'), 'error'); return; }
+    const a = res.data.data;
+    document.getElementById('editAssessmentId').value       = id;
+    document.getElementById('assessmentFormTitle').textContent = t('td.aform.edit');
+    document.getElementById('saveAssessmentBtn').textContent   = t('td.aform.savechanges');
+    document.getElementById('aTitle').value       = a.title       || '';
+    document.getElementById('aDesc').value        = a.description || '';
+    document.getElementById('aTimeLimit').value   = a.time_limit  || '';
+    document.getElementById('aMaxAttempts').value = a.max_attempts || 1;
+    document.getElementById('aPublish').checked   = a.is_published || false;
+    populateCourseDropdown(a.course_id);
+    document.getElementById('questionsContainer').innerHTML = '';
+    questionCount = 0;
+    (a.questions||[]).forEach(q => addQuestion(q));
+    switchSection('create-assessment');
+  }
+
+  function populateCourseDropdown(selectedId=null) {
+    const sel = document.getElementById('aCourse');
+    sel.innerHTML = `<option value="">${t('td.aform.selcourse')}</option>` +
+      teacherCourses.map(c => `<option value="${c.id}" ${selectedId==c.id?'selected':''}>${c.title}</option>`).join('');
+  }
+
+  // ── Question builder ──────────────────────────────────────────
+  function addQuestion(prefill=null) {
+    questionCount++;
+    const n     = questionCount;
+    const qType = prefill?.question_type || 'mcq';
+    const div   = document.createElement('div');
+    div.className = 'question-block';
+    div.id        = `q-block-${n}`;
+    div.innerHTML = `
+      <div class="question-block-header">
+        <span class="question-num">${t('sd.session.question')} ${n}</span>
+        <button class="btn-remove-q" onclick="removeQuestion(${n})"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <label class="create-label" data-i18n="td.q.type">${t('td.q.type')}</label>
+      <select class="q-select" id="q-type-${n}" onchange="onTypeChange(${n})">
+        <option value="mcq"          ${qType==='mcq'?'selected':''}>${t('td.q.mcq')}</option>
+        <option value="true_false"   ${qType==='true_false'?'selected':''}>${t('td.q.tf')}</option>
+        <option value="short_answer" ${qType==='short_answer'?'selected':''}>${t('td.q.short')}</option>
+      </select>
+      <label class="create-label">${t('td.q.text')}</label>
+      <input class="q-input" id="q-text-${n}" placeholder="${t('td.q.textph')}" value="${prefill?.text||''}"/>
+      <div id="q-options-area-${n}"></div>
+      <div style="display:flex;align-items:center;gap:12px;margin-top:4px;">
+        <label class="create-label" style="margin-bottom:0;">${t('td.q.points')}</label>
+        <input class="points-input" id="q-points-${n}" type="number" min="1" value="${prefill?.points||1}"/>
+      </div>`;
+    document.getElementById('questionsContainer').appendChild(div);
+    renderOptionsArea(n, qType, prefill);
+  }
+
+  function renderOptionsArea(n, type, prefill=null) {
+    const area = document.getElementById(`q-options-area-${n}`);
+    if (type==='mcq') {
+      const opts = prefill?.options||['',''];
+      const correct = prefill?.correct_answer||[];
+      const allowMultiple = prefill?.allow_multiple||false;
+      area.innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+          <label class="create-label" style="margin-bottom:0;">${t('td.q.options')}</label>
+          <div class="correct-toggle">
+            <input type="checkbox" id="q-multi-${n}" ${allowMultiple?'checked':''}/>
+            <label for="q-multi-${n}">${t('td.q.multi')}</label>
+          </div>
+        </div>
+        <div class="q-options-wrap" id="q-opts-${n}">
+          ${opts.map((o,i) => `
+            <div class="q-option-row">
+              <input type="text" class="q-input" style="margin-bottom:0;" placeholder="Option ${String.fromCharCode(65+i)}" value="${o}"/>
+              <div class="correct-toggle">
+                <input type="checkbox" class="q-correct-cb-${n}" ${Array.isArray(correct)&&correct.includes(o)?'checked':''}/>
+                <label style="font-size:11px;color:var(--text-muted);">${t('td.q.correct.lbl')}</label>
+              </div>
+            </div>`).join('')}
+        </div>
+        <button class="btn-add-option" onclick="addOption(${n})">${t('td.q.addopt')}</button>`;
+    } else if (type==='true_false') {
+      const correct = Array.isArray(prefill?.correct_answer) ? prefill.correct_answer[0] : (prefill?.correct_answer||'');
+      area.innerHTML = `
+        <label class="create-label">${t('td.q.correct')}</label>
+        <div class="tf-options">
+          <button class="tf-btn ${correct==='true'?'selected':''}"  id="tf-true-${n}"  onclick="selectTF(${n},'true')">✓ True</button>
+          <button class="tf-btn ${correct==='false'?'selected':''}" id="tf-false-${n}" onclick="selectTF(${n},'false')">✗ False</button>
+        </div>
+        <input type="hidden" id="q-answer-${n}" value="${correct}"/>`;
+    } else {
+      area.innerHTML = `<div style="font-size:13px;color:var(--text-muted);padding:10px 0;line-height:1.6;">${t('td.q.shortdesc')}</div>`;
+    }
+  }
+
+  function onTypeChange(n) { renderOptionsArea(n, document.getElementById(`q-type-${n}`).value); }
+  function selectTF(n, val) {
+    document.getElementById(`tf-true-${n}`).classList.toggle('selected',  val==='true');
+    document.getElementById(`tf-false-${n}`).classList.toggle('selected', val==='false');
+    document.getElementById(`q-answer-${n}`).value = val;
+  }
+  function addOption(n) {
+    const wrap = document.getElementById(`q-opts-${n}`);
+    if (wrap.children.length>=6) { showToast('Maximum 6 options.','info'); return; }
+    const row = document.createElement('div');
+    row.className = 'q-option-row';
+    row.innerHTML = `<input type="text" class="q-input" style="margin-bottom:0;" placeholder="Option ${['A','B','C','D','E','F'][wrap.children.length]}"/>
+      <div class="correct-toggle"><input type="checkbox" class="q-correct-cb-${wrap.closest('.question-block').id.replace('q-block-','')}"/><label style="font-size:11px;color:var(--text-muted);">${t('td.q.correct.lbl')}</label></div>`;
+    wrap.appendChild(row);
+  }
+  function removeQuestion(n) { document.getElementById(`q-block-${n}`)?.remove(); }
+
+  async function saveAssessment() {
+    const title      = document.getElementById('aTitle').value.trim();
+    const courseId   = document.getElementById('aCourse').value;
+    const editId     = document.getElementById('editAssessmentId').value;
+    if (!title)    { showToast(t('err.assess.title'),  'error'); return; }
+    if (!courseId) { showToast(t('err.assess.course'), 'error'); return; }
+    const questions = [];
+    for (const block of document.querySelectorAll('.question-block')) {
+      const n     = block.id.replace('q-block-','');
+      const qType = document.getElementById(`q-type-${n}`)?.value;
+      const qText = document.getElementById(`q-text-${n}`)?.value.trim();
+      if (!qText) { showToast(t('err.q.text'), 'error'); return; }
+      let options=[], correctAnswer=[], allowMultiple=false;
+      if (qType==='mcq') {
+        const optRows = document.querySelectorAll(`#q-opts-${n} .q-option-row`);
+        const cbs     = document.querySelectorAll(`.q-correct-cb-${n}`);
+        allowMultiple = document.getElementById(`q-multi-${n}`)?.checked||false;
+        optRows.forEach((row,i) => {
+          const val = row.querySelector('input[type=text]')?.value.trim();
+          if (val) { options.push(val); if (cbs[i]?.checked) correctAnswer.push(val); }
+        });
+        if (options.length<2)    { showToast(t('err.q.options'), 'error'); return; }
+        if (!correctAnswer.length){ showToast(t('err.q.correct'), 'error'); return; }
+      } else if (qType==='true_false') {
+        options = ['true','false'];
+        const val = document.getElementById(`q-answer-${n}`)?.value;
+        if (!val) { showToast(t('err.q.tf'), 'error'); return; }
+        correctAnswer = [val];
+      }
+      questions.push({ question_type:qType, text:qText, options, correct_answer:correctAnswer, allow_multiple:allowMultiple, points:parseInt(document.getElementById(`q-points-${n}`)?.value)||1 });
+    }
+    if (!questions.length) { showToast(t('err.q.atleast'), 'error'); return; }
+    const btn = document.getElementById('saveAssessmentBtn');
+    setLoading(btn, true);
+    let res;
+    const payload = { title, description:document.getElementById('aDesc').value.trim(), time_limit:document.getElementById('aTimeLimit').value?parseInt(document.getElementById('aTimeLimit').value):null, max_attempts:parseInt(document.getElementById('aMaxAttempts').value)||1, is_published:document.getElementById('aPublish').checked };
+    if (editId) { res = await AssessmentAPI.update(editId, payload); }
+    else        { res = await AssessmentAPI.create(courseId, { ...payload, questions }); }
+    setLoading(btn, false);
+    if (res.ok) {
+      showToast(editId ? t('toast.assess.updated') : t('toast.assess.saved'), 'success');
+      await loadAssessments();
+      setTimeout(() => switchSection('assessments'), 800);
+    } else { showToast(res.data.message || t('err.assess.title'), 'error'); }
+  }
+
+  // ── Grading 3-step ────────────────────────────────────────────
+  async function loadPendingGrades() {
+    const res = await GradeAPI.pendingGrades();
+    if (!res.ok) return;
+    const pending = res.data.data || [];
+    const badge   = document.getElementById('pendingBadge');
+    if (pending.length > 0) { badge.textContent = pending.length; badge.classList.remove('hidden'); }
+    else badge.classList.add('hidden');
+
+    pendingByAssessment = {};
+    for (const s of pending) {
+      const aid = s.assessment_id;
+      if (!pendingByAssessment[aid]) pendingByAssessment[aid] = { title: s.assessment_title||'Assessment', courseTitle: s.course_title||'', submissions: [] };
+      pendingByAssessment[aid].submissions.push(s);
+    }
+
+    const listEl = document.getElementById('gradingAssessmentList');
+    if (!Object.keys(pendingByAssessment).length) {
+      listEl.innerHTML = `<div style="color:var(--text-muted);font-size:14px;">${t('td.grade.empty')}</div>`;
+      return;
+    }
+    listEl.innerHTML = Object.entries(pendingByAssessment).map(([aid, data]) => `
+      <div class="assessment-grade-card" onclick="openGradingSubmissions(${aid})">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div>
+            <div class="assessment-grade-title">${data.title}</div>
+            <div class="assessment-grade-meta">${data.courseTitle} · ${data.submissions.length} ${data.submissions.length!==1?t('td.grade.submissions'):t('td.grade.submission')} ${t('td.grade.tograde')}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <span class="badge badge-pending">${data.submissions.length} ${t('td.grade.pending')}</span>
+            <i class="fa-solid fa-chevron-right" style="color:var(--text-muted);"></i>
+          </div>
+        </div>
+      </div>`).join('');
+  }
+
+  function openGradingSubmissions(assessmentId) {
+    const data = pendingByAssessment[assessmentId];
+    if (!data) return;
+    document.getElementById('gradingAssessmentTitle').textContent = data.title;
+    document.getElementById('gradingAssessmentMeta').textContent  = `${data.courseTitle} · ${data.submissions.length} ${data.submissions.length!==1?t('td.grade.submissions'):t('td.grade.submission')} ${t('td.grade2.awaiting')}`;
+    document.getElementById('topbarHeading').textContent = data.title;
+    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+    const nb = document.querySelector('[data-key="grading"]'); if (nb) nb.classList.add('active');
+    document.getElementById('submissionsList').innerHTML = data.submissions.map(s => `
+      <div class="submission-list-item">
+        <div>
+          <div style="font-size:14px;font-weight:600;color:var(--text-dark);">${s.student_name}</div>
+          <div style="font-size:12px;color:var(--text-muted);">${t('td.grade2.submitted')} ${s.submitted_at?s.submitted_at.slice(0,10):'—'} · ${t('td.grade2.autoscore')} ${s.score||0}/${s.max_score||0} ${t('td.grade2.pts')}</div>
+          <div style="font-size:12px;color:#d97706;margin-top:2px;">${s.short_answers?.length||0} ${(s.short_answers?.length||0)!==1?t('td.grade2.shorts'):t('td.grade2.short')} ${t('td.grade.tograde')}</div>
+        </div>
+        <button class="btn-card-action btn-edit" style="width:auto;padding:0 16px;" onclick="openGradingSingle(${s.id},${assessmentId})">
+          ${t('td.grade2.grade')} <i class="fa-solid fa-chevron-right" style="margin-left:4px;"></i>
+        </button>
+      </div>`).join('');
+    document.querySelectorAll('.page-section').forEach(s => s.classList.add('hidden'));
+    document.getElementById('section-grading-submissions').classList.remove('hidden');
+  }
+
+  function openGradingSingle(submissionId, assessmentId) {
+    const data = pendingByAssessment[assessmentId];
+    const sub  = data?.submissions.find(s => s.id===submissionId);
+    if (!sub) return;
+    currentGradingData = { submissionId, questionIds: (sub.short_answers||[]).map(q=>q.question_id) };
+    document.getElementById('gradingSingleTitle').textContent = `${t('td.grade3.grading')} ${sub.student_name}`;
+    document.getElementById('gradingSingleMeta').textContent  = `${data.title} · ${t('td.grade3.autoscore')} ${sub.score||0}/${sub.max_score||0} ${t('td.grade2.pts')}`;
+    document.getElementById('topbarHeading').textContent = `${t('td.grade2.grade')}: ${sub.student_name}`;
+    document.getElementById('backToSubmissionsLink').onclick = () => openGradingSubmissions(assessmentId);
+    document.getElementById('gradingSingleBody').innerHTML = (sub.short_answers||[]).map(q => `
+      <div class="grade-card">
+        <div class="grade-question">${q.question_text} <span style="font-size:12px;color:var(--text-muted);">(${t('td.grade3.max')} ${q.max_points} ${t('td.grade2.pts')})</span></div>
+        <div class="grade-answer">${q.student_answer || `<em style="color:var(--text-muted);">${t('td.grade3.noanswer')}</em>`}</div>
+        <div class="grade-row">
+          <label class="create-label" style="margin-bottom:0;white-space:nowrap;">${t('td.grade3.score')}</label>
+          <input type="number" class="grade-score-input" min="0" max="${q.max_points}" value="0" id="grade-score-${submissionId}-${q.question_id}"/>
+          <input type="text" class="grade-comment-input" id="grade-comment-${submissionId}-${q.question_id}" data-i18n-placeholder="td.grade3.comment" placeholder="${t('td.grade3.comment')}"/>
+        </div>
+      </div>`).join('');
+    document.querySelectorAll('.page-section').forEach(s => s.classList.add('hidden'));
+    document.getElementById('section-grading-single').classList.remove('hidden');
+  }
+
+  async function submitCurrentGrade() {
+    if (!currentGradingData) return;
+    const { submissionId, questionIds } = currentGradingData;
+    const grades = {};
+    for (const qid of questionIds) {
+      grades[String(qid)] = {
+        score:   parseFloat(document.getElementById(`grade-score-${submissionId}-${qid}`)?.value||0),
+        comment: document.getElementById(`grade-comment-${submissionId}-${qid}`)?.value||'',
+      };
+    }
+    const btn = document.getElementById('submitGradeBtn');
+    setLoading(btn, true);
+    const res = await GradeAPI.gradeSubmission(submissionId, { grades });
+    setLoading(btn, false);
+    if (res.ok) {
+      showToast(t('toast.grade.done'), 'success');
+      await loadPendingGrades();
+      await loadStudents();
+      switchSection('grading');
+    } else { showToast(res.data.message || t('err.grade.fail'), 'error'); }
+  }
+</script>
+</body>
+</html>
