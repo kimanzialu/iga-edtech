@@ -179,5 +179,5 @@ Full **English and Kinyarwanda** switching is supported across all pages. Click 
 https://docs.google.com/document/d/1GRkbGOEaSuGxWcceyBDCPUMX2m1WsFxt57og5NL-7I4/edit?usp=sharing
 
 ## Video Link
-https://docs.google.com/document/d/1GRkbGOEaSuGxWcceyBDCPUMX2m1WsFxt57og5NL-7I4/edit?usp=sharing
+https://www.boomshare.ai/shared/01KN1SZ0AS6SCW8M8Y0PA50RK8
 
